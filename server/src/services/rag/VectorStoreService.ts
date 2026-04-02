@@ -353,7 +353,7 @@ export class VectorStoreService {
 
   async healthCheck(): Promise<{ ok: boolean; detail?: string }> {
     try {
-      const response = await this.fetchWithTimeout(`${ragConfig.qdrantUrl}/healthz`, {
+      const response = await this.fetchWithTimeout(`${ragConfig.qdrantUrl}/`, {
         headers: buildHeaders(),
       });
       if (!response.ok) {

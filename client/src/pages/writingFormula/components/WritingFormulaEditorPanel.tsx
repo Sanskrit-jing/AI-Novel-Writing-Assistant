@@ -1,6 +1,8 @@
 import type { AntiAiRule, StyleProfile, StyleProfileFeature } from "@ai-novel/shared/types/styleEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import FullscreenEditor from "@/components/common/FullscreenEditor";
+import { Maximize2 } from "lucide-react";
 
 interface WritingFormulaEditorState {
   name: string;
@@ -50,8 +52,8 @@ export default function WritingFormulaEditorPanel(props: WritingFormulaEditorPan
   } = props;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <div className="flex items-center justify-between gap-2">
           <CardTitle>写法编辑</CardTitle>
           {selectedProfile ? (
@@ -61,47 +63,164 @@ export default function WritingFormulaEditorPanel(props: WritingFormulaEditorPan
           ) : null}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 overflow-y-auto space-y-3">
         {!selectedProfile ? (
           <div className="text-sm text-muted-foreground">请选择一个写法资产。</div>
         ) : (
           <>
             <div className="grid gap-3 md:grid-cols-2">
-              <input
-                className="rounded-md border p-2 text-sm"
-                value={editor.name}
-                onChange={(event) => onEditorChange({ name: event.target.value })}
-              />
-              <input
-                className="rounded-md border p-2 text-sm"
-                placeholder="分类"
-                value={editor.category}
-                onChange={(event) => onEditorChange({ category: event.target.value })}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">名称</span>
+                  <FullscreenEditor
+                    value={editor.name}
+                    onChange={(value) => onEditorChange({ name: value })}
+                    title="全屏编辑 - 写法名称"
+                    placeholder="请输入写法名称..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <input
+                  className="rounded-md border p-2 text-sm"
+                  value={editor.name}
+                  onChange={(event) => onEditorChange({ name: event.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">分类</span>
+                  <FullscreenEditor
+                    value={editor.category}
+                    onChange={(value) => onEditorChange({ category: value })}
+                    title="全屏编辑 - 分类"
+                    placeholder="请输入分类..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <input
+                  className="rounded-md border p-2 text-sm"
+                  placeholder="分类"
+                  value={editor.category}
+                  onChange={(event) => onEditorChange({ category: event.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">简介</span>
+                <FullscreenEditor
+                  value={editor.description}
+                  onChange={(value) => onEditorChange({ description: value })}
+                  title="全屏编辑 - 简介"
+                  placeholder="请输入简介..."
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    title="全屏编辑"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                  </Button>
+                </FullscreenEditor>
+              </div>
+              <textarea
+                className="min-h-[80px] w-full rounded-md border p-2 text-sm"
+                placeholder="简介"
+                value={editor.description}
+                onChange={(event) => onEditorChange({ description: event.target.value })}
               />
             </div>
-            <textarea
-              className="min-h-[80px] w-full rounded-md border p-2 text-sm"
-              placeholder="简介"
-              value={editor.description}
-              onChange={(event) => onEditorChange({ description: event.target.value })}
-            />
             <div className="grid gap-3 md:grid-cols-2">
-              <input
-                className="rounded-md border p-2 text-sm"
-                placeholder="标签，逗号分隔"
-                value={editor.tags}
-                onChange={(event) => onEditorChange({ tags: event.target.value })}
-              />
-              <input
-                className="rounded-md border p-2 text-sm"
-                placeholder="适用题材，逗号分隔"
-                value={editor.applicableGenres}
-                onChange={(event) => onEditorChange({ applicableGenres: event.target.value })}
-              />
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">标签</span>
+                  <FullscreenEditor
+                    value={editor.tags}
+                    onChange={(value) => onEditorChange({ tags: value })}
+                    title="全屏编辑 - 标签"
+                    placeholder="标签，逗号分隔"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <input
+                  className="rounded-md border p-2 text-sm"
+                  placeholder="标签，逗号分隔"
+                  value={editor.tags}
+                  onChange={(event) => onEditorChange({ tags: event.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">适用题材</span>
+                  <FullscreenEditor
+                    value={editor.applicableGenres}
+                    onChange={(value) => onEditorChange({ applicableGenres: value })}
+                    title="全屏编辑 - 适用题材"
+                    placeholder="适用题材，逗号分隔"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <input
+                  className="rounded-md border p-2 text-sm"
+                  placeholder="适用题材，逗号分隔"
+                  value={editor.applicableGenres}
+                  onChange={(event) => onEditorChange({ applicableGenres: event.target.value })}
+                />
+              </div>
             </div>
             {selectedProfile.sourceType === "from_text" || editor.sourceContent.trim() ? (
               <div className="space-y-2">
-                <div className="text-sm font-medium">原文样本</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">原文样本</div>
+                  <FullscreenEditor
+                    value={editor.sourceContent}
+                    onChange={(value) => onEditorChange({ sourceContent: value })}
+                    title="全屏编辑 - 原文样本"
+                    placeholder="这套写法资产提取时使用的原文样本"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
                 <textarea
                   className="min-h-[140px] w-full rounded-md border p-2 text-sm"
                   placeholder="这套写法资产提取时使用的原文样本"
@@ -155,33 +274,133 @@ export default function WritingFormulaEditorPanel(props: WritingFormulaEditorPan
                 )}
               </div>
             ) : null}
-            <textarea
-              className="min-h-[90px] w-full rounded-md border p-2 text-sm"
-              placeholder="AI 草稿 / 分析说明"
-              value={editor.analysisMarkdown}
-              onChange={(event) => onEditorChange({ analysisMarkdown: event.target.value })}
-            />
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">AI 草稿 / 分析说明</span>
+                <FullscreenEditor
+                  value={editor.analysisMarkdown}
+                  onChange={(value) => onEditorChange({ analysisMarkdown: value })}
+                  title="全屏编辑 - AI 草稿 / 分析说明"
+                  placeholder="请输入 AI 草稿 / 分析说明..."
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    title="全屏编辑"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                  </Button>
+                </FullscreenEditor>
+              </div>
+              <textarea
+                className="min-h-[90px] w-full rounded-md border p-2 text-sm"
+                placeholder="AI 草稿 / 分析说明"
+                value={editor.analysisMarkdown}
+                onChange={(event) => onEditorChange({ analysisMarkdown: event.target.value })}
+              />
+            </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <textarea
-                className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
-                value={editor.narrativeRules}
-                onChange={(event) => onEditorChange({ narrativeRules: event.target.value })}
-              />
-              <textarea
-                className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
-                value={editor.characterRules}
-                onChange={(event) => onEditorChange({ characterRules: event.target.value })}
-              />
-              <textarea
-                className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
-                value={editor.languageRules}
-                onChange={(event) => onEditorChange({ languageRules: event.target.value })}
-              />
-              <textarea
-                className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
-                value={editor.rhythmRules}
-                onChange={(event) => onEditorChange({ rhythmRules: event.target.value })}
-              />
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">叙事规则</span>
+                  <FullscreenEditor
+                    value={editor.narrativeRules}
+                    onChange={(value) => onEditorChange({ narrativeRules: value })}
+                    title="全屏编辑 - 叙事规则"
+                    placeholder="请输入叙事规则..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <textarea
+                  className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
+                  value={editor.narrativeRules}
+                  onChange={(event) => onEditorChange({ narrativeRules: event.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">角色规则</span>
+                  <FullscreenEditor
+                    value={editor.characterRules}
+                    onChange={(value) => onEditorChange({ characterRules: value })}
+                    title="全屏编辑 - 角色规则"
+                    placeholder="请输入角色规则..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <textarea
+                  className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
+                  value={editor.characterRules}
+                  onChange={(event) => onEditorChange({ characterRules: event.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">语言规则</span>
+                  <FullscreenEditor
+                    value={editor.languageRules}
+                    onChange={(value) => onEditorChange({ languageRules: value })}
+                    title="全屏编辑 - 语言规则"
+                    placeholder="请输入语言规则..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <textarea
+                  className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
+                  value={editor.languageRules}
+                  onChange={(event) => onEditorChange({ languageRules: event.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">节奏规则</span>
+                  <FullscreenEditor
+                    value={editor.rhythmRules}
+                    onChange={(value) => onEditorChange({ rhythmRules: value })}
+                    title="全屏编辑 - 节奏规则"
+                    placeholder="请输入节奏规则..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
+                <textarea
+                  className="min-h-[170px] rounded-md border p-2 font-mono text-xs"
+                  value={editor.rhythmRules}
+                  onChange={(event) => onEditorChange({ rhythmRules: event.target.value })}
+                />
+              </div>
             </div>
             <div className="rounded-md border p-3">
               <div className="mb-2 text-sm font-medium">绑定反 AI 规则</div>

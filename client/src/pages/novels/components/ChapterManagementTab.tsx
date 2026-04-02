@@ -342,8 +342,9 @@ export default function ChapterManagementTab(props: ChapterTabViewProps) {
           </div>
         )}
 
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
-          <div className="w-full xl:w-[300px] xl:flex-none">
+        {/* 第一排：章节队列和AI执行台，高度固定，宽度相同 */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="h-[600px] overflow-hidden">
             <ChapterExecutionQueueCard
               chapters={filteredChapters}
               selectedChapterId={selectedChapterId}
@@ -356,36 +357,7 @@ export default function ChapterManagementTab(props: ChapterTabViewProps) {
             />
           </div>
 
-          <div className="min-w-0 flex-1">
-            <ChapterExecutionResultPanel
-              novelId={novelId}
-              selectedChapter={selectedChapter}
-              assetTab={assetTab}
-              onAssetTabChange={setAssetTab}
-              chapterPlan={chapterPlan}
-              latestStateSnapshot={latestStateSnapshot}
-              chapterAuditReports={chapterAuditReports}
-              replanRecommendation={activeReplanRecommendation}
-              onReplanChapter={onReplanChapter}
-              isReplanningChapter={isReplanningChapter}
-              lastReplanResult={lastReplanResult}
-              chapterQualityReport={chapterQualityReport}
-              reviewResult={reviewResult}
-              openAuditIssues={openAuditIssues}
-              streamContent={streamContent}
-              isStreaming={isStreaming}
-              streamingChapterId={streamingChapterId}
-              streamingChapterLabel={streamingChapterLabel}
-              onAbortStream={onAbortStream}
-              repairStreamContent={repairStreamContent}
-              isRepairStreaming={isRepairStreaming}
-              repairStreamingChapterId={repairStreamingChapterId}
-              repairStreamingChapterLabel={repairStreamingChapterLabel}
-              onAbortRepair={onAbortRepair}
-            />
-          </div>
-
-          <div className="w-full xl:w-[320px] xl:flex-none">
+          <div className="h-[600px] overflow-hidden">
             <ChapterExecutionActionPanel
               novelId={novelId}
               selectedChapter={selectedChapter}
@@ -420,6 +392,36 @@ export default function ChapterManagementTab(props: ChapterTabViewProps) {
               isRunningFullAudit={isRunningFullAudit}
             />
           </div>
+        </div>
+
+        {/* 第二排：章节结果显示，高度固定，超过内容通过滚动条查看 */}
+        <div className="h-[500px] overflow-hidden">
+          <ChapterExecutionResultPanel
+            novelId={novelId}
+            selectedChapter={selectedChapter}
+            assetTab={assetTab}
+            onAssetTabChange={setAssetTab}
+            chapterPlan={chapterPlan}
+            latestStateSnapshot={latestStateSnapshot}
+            chapterAuditReports={chapterAuditReports}
+            replanRecommendation={activeReplanRecommendation}
+            onReplanChapter={onReplanChapter}
+            isReplanningChapter={isReplanningChapter}
+            lastReplanResult={lastReplanResult}
+            chapterQualityReport={chapterQualityReport}
+            reviewResult={reviewResult}
+            openAuditIssues={openAuditIssues}
+            streamContent={streamContent}
+            isStreaming={isStreaming}
+            streamingChapterId={streamingChapterId}
+            streamingChapterLabel={streamingChapterLabel}
+            onAbortStream={onAbortStream}
+            repairStreamContent={repairStreamContent}
+            isRepairStreaming={isRepairStreaming}
+            repairStreamingChapterId={repairStreamingChapterId}
+            repairStreamingChapterLabel={repairStreamingChapterLabel}
+            onAbortRepair={onAbortRepair}
+          />
         </div>
       </CardContent>
     </Card>

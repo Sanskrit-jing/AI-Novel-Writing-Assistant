@@ -218,7 +218,7 @@ export default function CharacterCastOptionsSection(props: CharacterCastOptionsS
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="max-h-[600px] overflow-y-auto space-y-4">
           {appliedOption && !isPlannerExpanded ? (
             <div className="grid gap-4 rounded-2xl border border-border/70 bg-background/80 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
               <div className="space-y-2">
@@ -376,7 +376,7 @@ export default function CharacterCastOptionsSection(props: CharacterCastOptionsS
         <CardHeader>
           <CardTitle>结构化关系网</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm">
+        <CardContent className="max-h-[400px] overflow-y-auto space-y-3 text-sm">
           {selectedCharacter ? (
             <div className="text-xs text-muted-foreground">
               当前聚焦：{selectedCharacter.name}（{selectedCharacter.role || "未定义"}）

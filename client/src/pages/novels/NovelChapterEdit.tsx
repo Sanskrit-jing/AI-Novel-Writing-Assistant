@@ -3,27 +3,22 @@ import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import StreamOutput from "@/components/common/StreamOutput";
 import LLMSelector from "@/components/common/LLMSelector";
+import FullscreenEditor from "@/components/common/FullscreenEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Maximize2 } from "lucide-react";
 import { queryKeys } from "@/api/queryKeys";
 import {
-  createCreativeDecision,
-  deleteCreativeDecision,
   getChapterAuditReports,
   getChapterPlan,
   getChapterStateSnapshot,
   getNovelDetail,
   getChapterTraces,
-  listCreativeDecisions,
   replanNovel,
   updateNovelChapter,
 } from "@/api/novel";
 import {
-  createStyleBinding,
-  deleteStyleBinding,
   detectStyleIssues,
-  getStyleBindings,
-  getStyleProfiles,
   rewriteStyleIssues,
 } from "@/api/styleEngine";
 import { useSSE } from "@/hooks/useSSE";
@@ -35,12 +30,7 @@ export default function NovelChapterEdit() {
   const queryClient = useQueryClient();
   const llm = useLLMStore();
   const [contentDraft, setContentDraft] = useState("");
-  const [selectedStyleProfileId, setSelectedStyleProfileId] = useState("");
   const [styleRewritePreview, setStyleRewritePreview] = useState("");
-  const [decisionForm, setDecisionForm] = useState({
-    category: "plot",
-    content: "",
-  });
 
   const { data: detailResponse } = useQuery({
     queryKey: queryKeys.novels.detail(id),
@@ -48,152 +38,66 @@ export default function NovelChapterEdit() {
     enabled: Boolean(id),
   });
 
-  const chapter = useMemo(
-    () => detailResponse?.data?.chapters.find((item) => item.id === chapterId),
-    [chapterId, detailResponse?.data?.chapters],
-  );
-
-  useEffect(() => {
-    setContentDraft(chapter?.content ?? "");
-  }, [chapter?.content]);
-
-  const { content, start, abort, isStreaming, runtimePackage } = useSSE({
-    onDone: async (fullContent) => {
-      setContentDraft(fullContent);
-      if (id && chapterId) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: queryKeys.novels.detail(id) }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.novels.chapterTraces(id, chapterId) }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.novels.chapterPlan(id, chapterId) }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.novels.chapterStateSnapshot(id, chapterId) }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.novels.chapterAuditReports(id, chapterId) }),
-        ]);
-      }
-    },
-  });
-
-  const { data: tracesResponse } = useQuery({
-    queryKey: queryKeys.novels.chapterTraces(id, chapterId),
-    queryFn: () => getChapterTraces(id!, chapterId!),
-    enabled: Boolean(id && chapterId),
-  });
-  const traces = tracesResponse?.data ?? [];
-
   const { data: chapterPlanResponse } = useQuery({
     queryKey: queryKeys.novels.chapterPlan(id, chapterId),
     queryFn: () => getChapterPlan(id, chapterId),
-    enabled: Boolean(id && chapterId),
+    enabled: Boolean(id) && Boolean(chapterId),
   });
 
-  const { data: chapterStateResponse } = useQuery({
+  const { data: chapterStateSnapshotResponse } = useQuery({
     queryKey: queryKeys.novels.chapterStateSnapshot(id, chapterId),
     queryFn: () => getChapterStateSnapshot(id, chapterId),
-    enabled: Boolean(id && chapterId),
+    enabled: Boolean(id) && Boolean(chapterId),
   });
 
-  const { data: chapterAuditResponse } = useQuery({
+  const { data: chapterTracesResponse } = useQuery({
+    queryKey: queryKeys.novels.chapterTraces(id, chapterId),
+    queryFn: () => getChapterTraces(id, chapterId),
+    enabled: Boolean(id) && Boolean(chapterId),
+  });
+
+  const { data: chapterAuditReportsResponse } = useQuery({
     queryKey: queryKeys.novels.chapterAuditReports(id, chapterId),
     queryFn: () => getChapterAuditReports(id, chapterId),
-    enabled: Boolean(id && chapterId),
+    enabled: Boolean(id) && Boolean(chapterId),
   });
 
-  const chapterPlan = chapterPlanResponse?.data ?? null;
-  const chapterStateSnapshot = chapterStateResponse?.data ?? null;
-  const chapterAuditReports = chapterAuditResponse?.data ?? [];
-  const openAuditIssueIds = useMemo(
-    () => chapterAuditReports.flatMap((report) => report.issues.filter((issue) => issue.status === "open").map((issue) => issue.id)),
-    [chapterAuditReports],
+  const novel = detailResponse?.data ?? null;
+  const chapter = useMemo(
+    () => novel?.chapters.find((c) => c.id === chapterId) ?? null,
+    [novel, chapterId],
   );
-
-  const { data: styleProfilesResponse } = useQuery({
-    queryKey: queryKeys.styleEngine.profiles,
-    queryFn: getStyleProfiles,
-  });
-  const styleProfiles = styleProfilesResponse?.data ?? [];
-
-  const { data: chapterStyleBindingsResponse } = useQuery({
-    queryKey: queryKeys.styleEngine.bindings(`chapter-${chapterId}`),
-    queryFn: () => getStyleBindings({ targetType: "chapter", targetId: chapterId }),
-    enabled: Boolean(chapterId),
-  });
-  const chapterStyleBindings = chapterStyleBindingsResponse?.data ?? [];
+  const chapterPlan = chapterPlanResponse?.data ?? null;
+  const chapterStateSnapshot = chapterStateSnapshotResponse?.data ?? null;
+  const traces = chapterTracesResponse?.data ?? [];
+  const chapterAuditReports = chapterAuditReportsResponse?.data ?? [];
 
   useEffect(() => {
-    if (!selectedStyleProfileId && styleProfiles.length > 0) {
-      setSelectedStyleProfileId(styleProfiles[0].id);
+    if (chapter?.content) {
+      setContentDraft(chapter.content);
     }
-  }, [selectedStyleProfileId, styleProfiles]);
+  }, [chapter?.content]);
 
-  const { data: decisionResponse } = useQuery({
-    queryKey: queryKeys.novels.creativeDecisions(id),
-    queryFn: () => listCreativeDecisions(id),
-    enabled: Boolean(id),
-  });
-  const decisions = decisionResponse?.data ?? [];
+  const { start, abort, isStreaming, content, runtimePackage } = useSSE();
 
   const saveChapterMutation = useMutation({
-    mutationFn: (text: string) =>
-      updateNovelChapter(id, chapterId, {
-        content: text,
-      }),
+    mutationFn: (content: string) => updateNovelChapter(id, chapterId, { content }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.novels.detail(id),
-      });
-    },
-  });
-
-  const createDecisionMutation = useMutation({
-    mutationFn: () => createCreativeDecision(id, {
-      chapterId,
-      category: decisionForm.category,
-      content: decisionForm.content,
-      importance: "normal",
-      sourceType: "manual",
-      sourceRefId: chapterId,
-    }),
-    onSuccess: async () => {
-      setDecisionForm({ category: "plot", content: "" });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.novels.creativeDecisions(id) });
-    },
-  });
-
-  const deleteDecisionMutation = useMutation({
-    mutationFn: (decisionId: string) => deleteCreativeDecision(id, decisionId),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.novels.creativeDecisions(id) });
-    },
-  });
-
-  const createStyleBindingMutation = useMutation({
-    mutationFn: () => createStyleBinding({
-      styleProfileId: selectedStyleProfileId,
-      targetType: "chapter",
-      targetId: chapterId,
-      priority: 5,
-      weight: 1,
-    }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.styleEngine.bindings(`chapter-${chapterId}`) });
-    },
-  });
-
-  const deleteStyleBindingMutation = useMutation({
-    mutationFn: (bindingId: string) => deleteStyleBinding(bindingId),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.styleEngine.bindings(`chapter-${chapterId}`) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.novels.detail(id) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.novels.chapterPlan(id, chapterId) });
     },
   });
 
   const detectStyleMutation = useMutation({
-    mutationFn: () => detectStyleIssues({
-      content: contentDraft,
-      novelId: id,
-      chapterId,
-      provider: llm.provider,
-      model: llm.model,
-      temperature: 0.2,
-    }),
+    mutationFn: () =>
+      detectStyleIssues({
+        content: contentDraft,
+        novelId: id,
+        chapterId,
+        provider: llm.provider,
+        model: llm.model,
+        temperature: 0.2,
+      }),
   });
 
   const rewriteStyleMutation = useMutation({
@@ -252,13 +156,25 @@ export default function NovelChapterEdit() {
     },
   });
 
+  const openAuditIssueIds = useMemo(() => {
+    const issues: string[] = [];
+    chapterAuditReports.forEach((report) => {
+      report.issues.forEach((issue) => {
+        if (issue.status === "open") {
+          issues.push(issue.id);
+        }
+      });
+    });
+    return issues;
+  }, [chapterAuditReports]);
+
   return (
     <div className="grid gap-4 lg:grid-cols-[28%_44%_28%]">
-      <Card>
-        <CardHeader>
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="shrink-0">
           <CardTitle>章节信息</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="flex-1 overflow-y-auto space-y-3">
           <div>
             <div className="mb-1 text-sm text-muted-foreground">章节标题</div>
             <div className="rounded-md border p-2 text-sm">{chapter?.title ?? "未找到章节"}</div>
@@ -271,7 +187,6 @@ export default function NovelChapterEdit() {
                   provider: llm.provider,
                   model: llm.model,
                   temperature: llm.temperature,
-                  taskStyleProfileId: selectedStyleProfileId || undefined,
                 })
               }
               disabled={isStreaming || !chapter}
@@ -307,17 +222,34 @@ export default function NovelChapterEdit() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="shrink-0">
           <CardTitle>正文编辑</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <textarea
-            className="min-h-[520px] w-full rounded-md border bg-background p-3 text-sm"
-            value={contentDraft}
-            onChange={(event) => setContentDraft(event.target.value)}
-            placeholder="在这里编辑章节正文..."
-          />
+        <CardContent className="flex-1 overflow-y-auto space-y-3">
+          <div className="relative">
+            <textarea
+              className="min-h-[570px] w-full rounded-md border bg-background p-3 text-sm"
+              value={contentDraft}
+              onChange={(event) => setContentDraft(event.target.value)}
+              placeholder="在这里编辑章节正文..."
+            />
+            <FullscreenEditor
+              value={contentDraft}
+              onChange={(value) => setContentDraft(value)}
+              title="全屏编辑 - 章节正文"
+              placeholder="在这里编辑章节正文..."
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background"
+                title="全屏编辑"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </FullscreenEditor>
+          </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>字数：{contentDraft.length}</span>
             <Button
@@ -330,48 +262,11 @@ export default function NovelChapterEdit() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="shrink-0">
           <CardTitle>写法 / 审计 / 决策</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="rounded-md border p-3">
-            <div className="mb-2 text-sm font-medium">当前章节写法</div>
-            <div className="flex gap-2">
-              <select
-                className="flex-1 rounded-md border bg-background p-2 text-sm"
-                value={selectedStyleProfileId}
-                onChange={(event) => setSelectedStyleProfileId(event.target.value)}
-              >
-                {styleProfiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>{profile.name}</option>
-                ))}
-              </select>
-              <Button
-                size="sm"
-                onClick={() => createStyleBindingMutation.mutate()}
-                disabled={createStyleBindingMutation.isPending || !selectedStyleProfileId || !chapterId}
-              >
-                绑定到本章
-              </Button>
-            </div>
-            <div className="mt-2 space-y-2">
-              {chapterStyleBindings.map((binding) => (
-                <div key={binding.id} className="flex items-center justify-between rounded-md border p-2 text-sm">
-                  <span>{binding.styleProfile?.name ?? binding.styleProfileId}</span>
-                  <Button size="sm" variant="ghost" onClick={() => deleteStyleBindingMutation.mutate(binding.id)}>
-                    删除
-                  </Button>
-                </div>
-              ))}
-              {runtimePackage?.context.styleContext?.matchedBindings?.length ? (
-                <div className="rounded-md border bg-muted/20 p-2 text-xs text-muted-foreground">
-                  当前命中：{runtimePackage.context.styleContext.matchedBindings.map((binding) => binding.styleProfile?.name ?? binding.styleProfileId).join(" / ")}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
+        <CardContent className="flex-1 overflow-y-auto space-y-3">
           <div className="rounded-md border p-3">
             <div className="mb-2 text-sm font-medium">写法检测 / 一键修正</div>
             <div className="flex gap-2">
@@ -427,57 +322,6 @@ export default function NovelChapterEdit() {
             isReplanning={replanChapterMutation.isPending}
             lastReplanResult={replanChapterMutation.data?.data ?? null}
           />
-          <select
-            className="w-full rounded-md border bg-background p-2 text-sm"
-            value={decisionForm.category}
-            onChange={(event) => setDecisionForm((prev) => ({ ...prev, category: event.target.value }))}
-          >
-            <option value="plot">plot</option>
-            <option value="character">character</option>
-            <option value="world">world</option>
-            <option value="style">style</option>
-          </select>
-          <textarea
-            className="min-h-28 w-full rounded-md border bg-background p-3 text-sm"
-            value={decisionForm.content}
-            onChange={(event) => setDecisionForm((prev) => ({ ...prev, content: event.target.value }))}
-            placeholder="记录当前章节必须遵守的创作决策..."
-          />
-          <Button
-            onClick={() => createDecisionMutation.mutate()}
-            disabled={createDecisionMutation.isPending || !decisionForm.content.trim()}
-          >
-            添加决策
-          </Button>
-
-          <div className="space-y-2">
-            {decisions.map((decision) => (
-              <div key={decision.id} className="rounded-md border p-3 text-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="font-medium">{decision.category}</div>
-                    <div className="mt-1 text-muted-foreground">{decision.content}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {decision.sourceType ?? "manual"} · {new Date(decision.createdAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteDecisionMutation.mutate(decision.id)}
-                    disabled={deleteDecisionMutation.isPending}
-                  >
-                    删除
-                  </Button>
-                </div>
-              </div>
-            ))}
-            {decisions.length === 0 ? (
-              <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                还没有创作决策。
-              </div>
-            ) : null}
-          </div>
         </CardContent>
       </Card>
     </div>

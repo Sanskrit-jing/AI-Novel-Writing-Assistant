@@ -357,14 +357,6 @@ export function useNovelVolumePlanning({
     if (!ensureCharacterGuard()) {
       return;
     }
-    const confirmed = window.confirm([
-      "将生成卷战略建议，帮助决定推荐卷数、硬规划卷数和各卷角色定位。",
-      "这一步不会直接生成卷骨架，也不会拆章节。",
-      hasUnsavedVolumeDraft ? "本次会直接使用当前页面未保存草稿作为参考。" : "本次会基于当前工作区状态生成建议。",
-    ].join("\n\n"));
-    if (!confirmed) {
-      return;
-    }
     generateMutation.mutate({ scope: "strategy" });
   };
 

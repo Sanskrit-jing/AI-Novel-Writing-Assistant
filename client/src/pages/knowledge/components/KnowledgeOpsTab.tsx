@@ -26,49 +26,30 @@ export default function KnowledgeOpsTab({
   failedJobs,
 }: KnowledgeOpsTabProps) {
   return (
-    <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-      <Card>
-        <CardHeader>
-          <CardTitle>基础统计</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div>当前列表文档数：{visibleDocumentsCount}</div>
-          <div>启用文档数：{enabledCount}</div>
-          <div>停用文档数：{disabledCount}</div>
-          <div>
-            RAG 健康：
-            <Badge variant="outline" className="ml-2">
-              {ragHealth?.ok ? "正常" : "异常"}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="grid gap-4 lg:grid-cols-2">
       <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>健康状态</CardTitle>
+        <Card className="h-[230px] flex flex-col">
+          <CardHeader className="shrink-0">
+            <CardTitle>基础统计</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
+          <CardContent className="flex-1 overflow-y-auto space-y-2 text-sm">
+            <div>当前列表文档数：{visibleDocumentsCount}</div>
+            <div>启用文档数：{enabledCount}</div>
+            <div>停用文档数：{disabledCount}</div>
             <div>
-              Embedding：{ragHealth?.embedding.provider ?? "-"} / {ragHealth?.embedding.model ?? "-"} /{" "}
-              {ragHealth?.embedding.ok ? "OK" : "FAIL"}
+              RAG 健康：
+              <Badge variant="outline" className="ml-2">
+                {ragHealth?.ok ? "正常" : "异常"}
+              </Badge>
             </div>
-            <div>Qdrant：{ragHealth?.qdrant.ok ? "OK" : "FAIL"}</div>
-            {ragHealth?.embedding.detail ? (
-              <div className="text-xs text-muted-foreground">{ragHealth.embedding.detail}</div>
-            ) : null}
-            {ragHealth?.qdrant.detail ? (
-              <div className="text-xs text-muted-foreground">{ragHealth.qdrant.detail}</div>
-            ) : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="h-[420px] flex flex-col">
+          <CardHeader className="shrink-0">
             <CardTitle>最近任务</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="flex-1 overflow-y-auto space-y-2">
             {jobs.length === 0 ? (
               <div className="text-sm text-muted-foreground">当前还没有 RAG 任务。</div>
             ) : null}
@@ -106,12 +87,33 @@ export default function KnowledgeOpsTab({
             ))}
           </CardContent>
         </Card>
+      </div>
 
-        <Card>
-          <CardHeader>
+      <div className="space-y-4">
+        <Card className="h-[230px] flex flex-col">
+          <CardHeader className="shrink-0">
+            <CardTitle>健康状态</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-y-auto space-y-2 text-sm">
+            <div>
+              Embedding：{ragHealth?.embedding.provider ?? "-"} / {ragHealth?.embedding.model ?? "-"} /
+              {ragHealth?.embedding.ok ? "OK" : "FAIL"}
+            </div>
+            <div>Qdrant：{ragHealth?.qdrant.ok ? "OK" : "FAIL"}</div>
+            {ragHealth?.embedding.detail ? (
+              <div className="text-xs text-muted-foreground">{ragHealth.embedding.detail}</div>
+            ) : null}
+            {ragHealth?.qdrant.detail ? (
+              <div className="text-xs text-muted-foreground">{ragHealth.qdrant.detail}</div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="h-[420px] flex flex-col">
+          <CardHeader className="shrink-0">
             <CardTitle>最近失败任务</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="flex-1 overflow-y-auto space-y-2">
             {failedJobs.length === 0 ? (
               <div className="text-sm text-muted-foreground">没有失败任务。</div>
             ) : null}

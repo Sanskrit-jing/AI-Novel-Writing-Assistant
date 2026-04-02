@@ -22,6 +22,7 @@ import WorldWorkspace from "@/pages/worlds/WorldWorkspace";
 import WritingFormulaPage from "@/pages/writingFormula/WritingFormulaPage";
 import { featureFlags } from "@/config/featureFlags";
 import NovelCreate from "@/pages/novels/NovelCreate";
+import PublishPage from "@/pages/publish/PublishPage";
 
 const routes: RouteObject[] = [
   {
@@ -56,6 +57,7 @@ const routes: RouteObject[] = [
       { path: "style-engine", element: <WritingFormulaPage /> },
       { path: "writing-formula", element: <Navigate to="/style-engine" replace /> },
       { path: "base-characters", element: <CharacterLibrary /> },
+      { path: "publish", element: <PublishPage /> },
       { path: "*", element: <Navigate to="/" replace /> },
     ],
   },

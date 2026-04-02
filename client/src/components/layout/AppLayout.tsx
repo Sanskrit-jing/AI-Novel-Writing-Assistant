@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import BackButton from "../common/BackButton";
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "ai-novel.sidebar.collapsed";
 
@@ -25,8 +26,9 @@ export default function AppLayout() {
           collapsed={isSidebarCollapsed}
           onToggle={() => setIsSidebarCollapsed((current) => !current)}
         />
-        <main className="h-[calc(100vh-4rem)] flex-1 overflow-y-auto p-6">
+        <main className="h-[calc(100vh-4rem)] flex-1 overflow-y-auto p-6 relative">
           <Outlet />
+          <BackButton />
         </main>
       </div>
     </div>

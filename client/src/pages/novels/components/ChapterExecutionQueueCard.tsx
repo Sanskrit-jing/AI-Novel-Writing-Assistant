@@ -36,8 +36,8 @@ export default function ChapterExecutionQueueCard(props: ChapterExecutionQueueCa
   } = props;
 
   return (
-    <Card className="self-start overflow-hidden border-border/70 lg:sticky lg:top-4">
-      <CardHeader className="gap-3 border-b bg-gradient-to-b from-muted/30 to-background pb-4">
+    <Card className="h-full overflow-hidden border-border/70">
+      <CardHeader className="gap-3 border-b bg-gradient-to-b from-muted/30 to-background pb-4 shrink-0">
         <div className="space-y-1">
           <CardTitle className="text-base">章节队列</CardTitle>
           <p className="text-sm leading-6 text-muted-foreground">
@@ -64,8 +64,8 @@ export default function ChapterExecutionQueueCard(props: ChapterExecutionQueueCa
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="max-h-[calc(100vh-240px)] space-y-3 overflow-y-auto pr-1">
+      <CardContent className="flex-1 overflow-hidden pt-4">
+        <div className="h-full space-y-3 overflow-y-auto pr-1">
           {chapters.length === 0 ? (
             <div className="rounded-xl border border-dashed p-4 text-xs leading-6 text-muted-foreground">
               当前筛选下还没有章节。

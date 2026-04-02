@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ConfirmationDialog from "@/components/common/ConfirmationDialog";
+import FullscreenEditor from "@/components/common/FullscreenEditor";
+import { Maximize2 } from "lucide-react";
 import WorldInjectionHint from "./WorldInjectionHint";
 import type { OutlineTabViewProps } from "./NovelEditView.types";
 
@@ -120,9 +123,17 @@ export default function OutlineTab(props: OutlineTabViewProps) {
           <div className="text-sm text-muted-foreground">先让系统帮你决定卷数和硬/软规划，再确认可继续拆节奏板的卷骨架。</div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={onGenerateStrategy} disabled={isGeneratingStrategy}>
-            {isGeneratingStrategy ? "生成中..." : "生成卷战略建议"}
-          </Button>
+          <ConfirmationDialog
+            title="生成卷战略建议"
+            description="将生成卷战略建议，帮助决定推荐卷数、硬规划卷数和各卷角色定位。\n\n这一步不会直接生成卷骨架，也不会拆章节。\n\n本次会基于当前工作区状态生成建议。"
+            onConfirm={onGenerateStrategy}
+            confirmText="确认"
+            cancelText="取消"
+          >
+            <Button variant="outline" disabled={isGeneratingStrategy}>
+              {isGeneratingStrategy ? "生成中..." : "生成卷战略建议"}
+            </Button>
+          </ConfirmationDialog>
           <Button variant="outline" onClick={onCritiqueStrategy} disabled={isCritiquingStrategy || !strategyPlan}>
             {isCritiquingStrategy ? "审查中..." : "AI审查卷战略"}
           </Button>
@@ -203,6 +214,30 @@ export default function OutlineTab(props: OutlineTabViewProps) {
               </CardContent>
             </Card>
 
+            <Card className="self-start">
+              <CardHeader>
+                <CardTitle className="text-base">影响分析</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={onAnalyzeDraftImpact} disabled={isAnalyzingDraftImpact || volumes.length === 0}>
+                    {isAnalyzingDraftImpact ? "分析中..." : "分析当前草稿"}
+                  </Button>
+                  <Button variant="outline" onClick={onAnalyzeVersionImpact} disabled={isAnalyzingVersionImpact || !selectedVersionId}>
+                    {isAnalyzingVersionImpact ? "分析中..." : "分析当前版本"}
+                  </Button>
+                </div>
+                {impactResult ? (
+                  <div className="rounded-md border p-2 text-xs">
+                    <div className="font-medium">卷级影响预览</div>
+                    <div className="text-muted-foreground">影响卷 {impactResult.affectedVolumeCount} | 波及章节 {impactResult.affectedChapterCount} | 变更行数 {impactResult.changedLines}</div>
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">建议在生效前先做卷级影响分析。</div>
+                )}
+              </CardContent>
+            </Card>
+
             {critiqueReport ? (
               <Card className="self-start">
                 <CardHeader className="pb-3">
@@ -242,7 +277,27 @@ export default function OutlineTab(props: OutlineTabViewProps) {
                 <CardTitle className="text-base">派生文本预览</CardTitle>
               </CardHeader>
               <CardContent>
-                <textarea className="min-h-[220px] w-full rounded-md border bg-muted/20 p-3 text-sm" readOnly value={draftText} />
+                <div className="relative">
+                  <textarea className="min-h-[255px] w-full rounded-md border bg-muted/20 p-3 text-sm" readOnly value={draftText} />
+                  <FullscreenEditor
+                    value={draftText}
+                    onChange={(value) => {
+                      // 这里需要更新 draftText，但由于这是从 props 传来的，需要通过父组件更新
+                      // 暂时先保持只读，因为我们没有直接的 onChange 方法
+                    }}
+                    title="全屏编辑 - 派生文本预览"
+                    placeholder="请输入文本..."
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
               </CardContent>
             </Card>
 
@@ -297,30 +352,6 @@ export default function OutlineTab(props: OutlineTabViewProps) {
                     <div className="text-muted-foreground">变更卷 {diffResult.changedVolumeCount} | 波及章节 {diffResult.changedChapterCount} | 变更行数 {diffResult.changedLines}</div>
                   </div>
                 ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="self-start">
-              <CardHeader>
-                <CardTitle className="text-base">影响分析</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={onAnalyzeDraftImpact} disabled={isAnalyzingDraftImpact || volumes.length === 0}>
-                    {isAnalyzingDraftImpact ? "分析中..." : "分析当前草稿"}
-                  </Button>
-                  <Button variant="outline" onClick={onAnalyzeVersionImpact} disabled={isAnalyzingVersionImpact || !selectedVersionId}>
-                    {isAnalyzingVersionImpact ? "分析中..." : "分析当前版本"}
-                  </Button>
-                </div>
-                {impactResult ? (
-                  <div className="rounded-md border p-2 text-xs">
-                    <div className="font-medium">卷级影响预览</div>
-                    <div className="text-muted-foreground">影响卷 {impactResult.affectedVolumeCount} | 波及章节 {impactResult.affectedChapterCount} | 变更行数 {impactResult.changedLines}</div>
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground">建议在生效前先做卷级影响分析。</div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -378,8 +409,8 @@ export default function OutlineTab(props: OutlineTabViewProps) {
         </Card>
 
         <div className="grid items-start gap-3 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <Card className="self-start xl:sticky xl:top-4">
-            <CardHeader className="pb-3">
+          <Card className="self-start xl:sticky xl:top-4 h-[calc(100vh-8rem)] flex flex-col">
+            <CardHeader className="pb-3 shrink-0">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <CardTitle className="text-base">卷导航</CardTitle>
@@ -388,9 +419,9 @@ export default function OutlineTab(props: OutlineTabViewProps) {
                 <Button size="sm" variant="outline" onClick={onAddVolume}>新增卷</Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex-1 overflow-y-auto space-y-3">
               {volumes.length > 0 ? (
-                <div className="max-h-[720px] space-y-2 overflow-y-auto pr-1">
+                <div className="space-y-2 pr-1">
                   {volumes.map((volume) => {
                     const strategyVolume = strategyPlan?.volumes.find((item) => item.sortOrder === volume.sortOrder) ?? null;
                     const isSelected = selectedVolume?.id === volume.id;
@@ -416,8 +447,31 @@ export default function OutlineTab(props: OutlineTabViewProps) {
                         <div className="mt-2 text-sm font-medium">
                           {volume.title || strategyVolume?.roleLabel || `第${volume.sortOrder}卷`}
                         </div>
-                        <div className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">
-                          {volume.summary || volume.mainPromise || strategyVolume?.coreReward || "先补这卷的标题和描述，便于后续导航。"}
+                        <div className="relative mt-1">
+                          <div className="line-clamp-3 text-xs leading-5 text-muted-foreground">
+                            {volume.summary || volume.mainPromise || strategyVolume?.coreReward || "先补这卷的标题和描述，便于后续导航。"}
+                          </div>
+                          <FullscreenEditor
+                            value={volume.summary || volume.mainPromise || strategyVolume?.coreReward || ""}
+                            onChange={(value) => {
+                              if (volume.summary) {
+                                onVolumeFieldChange(volume.id, "summary", value);
+                              } else if (volume.mainPromise) {
+                                onVolumeFieldChange(volume.id, "mainPromise", value);
+                              }
+                            }}
+                            title={`全屏编辑 - 第${volume.sortOrder}卷描述`}
+                            placeholder="请输入卷描述..."
+                          >
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-0 right-0 h-6 w-6 bg-background/80 hover:bg-background"
+                              title="全屏编辑"
+                            >
+                              <Maximize2 className="h-3 w-3" />
+                            </Button>
+                          </FullscreenEditor>
                         </div>
                       </button>
                     );
@@ -433,8 +487,8 @@ export default function OutlineTab(props: OutlineTabViewProps) {
 
           <div className="space-y-3">
             {selectedVolume ? (
-              <Card key={selectedVolume.id}>
-              <CardHeader className="pb-3">
+              <Card key={selectedVolume.id} className="h-[calc(100vh-8rem)] flex flex-col">
+              <CardHeader className="pb-3 shrink-0">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">第{selectedVolume.sortOrder}卷</Badge>
@@ -457,61 +511,299 @@ export default function OutlineTab(props: OutlineTabViewProps) {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-2">
+              <CardContent className="flex-1 overflow-y-auto grid gap-3 md:grid-cols-2">
                 <label className="space-y-1 text-sm md:col-span-2">
-                  <span className="text-xs text-muted-foreground">卷标题</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">卷标题</span>
+                    <FullscreenEditor
+                      value={selectedVolume.title}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "title", value)}
+                      title="全屏编辑 - 卷标题"
+                      placeholder="请输入卷标题..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <input className="w-full rounded-md border bg-background p-2" value={selectedVolume.title} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "title", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">卷摘要</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">卷摘要</span>
+                    <FullscreenEditor
+                      value={selectedVolume.summary ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "summary", value)}
+                      title="全屏编辑 - 卷摘要"
+                      placeholder="请输入卷摘要..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.summary ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "summary", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">开卷抓手</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">开卷抓手</span>
+                    <FullscreenEditor
+                      value={selectedVolume.openingHook ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "openingHook", value)}
+                      title="全屏编辑 - 开卷抓手"
+                      placeholder="请输入开卷抓手..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.openingHook ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "openingHook", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">主承诺</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">主承诺</span>
+                    <FullscreenEditor
+                      value={selectedVolume.mainPromise ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "mainPromise", value)}
+                      title="全屏编辑 - 主承诺"
+                      placeholder="请输入主承诺..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.mainPromise ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "mainPromise", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">主压迫源</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">主压迫源</span>
+                    <FullscreenEditor
+                      value={selectedVolume.primaryPressureSource ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "primaryPressureSource", value)}
+                      title="全屏编辑 - 主压迫源"
+                      placeholder="请输入主压迫源..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.primaryPressureSource ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "primaryPressureSource", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">核心卖点</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">核心卖点</span>
+                    <FullscreenEditor
+                      value={selectedVolume.coreSellingPoint ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "coreSellingPoint", value)}
+                      title="全屏编辑 - 核心卖点"
+                      placeholder="请输入核心卖点..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.coreSellingPoint ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "coreSellingPoint", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">升级方式</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">升级方式</span>
+                    <FullscreenEditor
+                      value={selectedVolume.escalationMode ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "escalationMode", value)}
+                      title="全屏编辑 - 升级方式"
+                      placeholder="请输入升级方式..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.escalationMode ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "escalationMode", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">主角变化</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">主角变化</span>
+                    <FullscreenEditor
+                      value={selectedVolume.protagonistChange ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "protagonistChange", value)}
+                      title="全屏编辑 - 主角变化"
+                      placeholder="请输入主角变化..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.protagonistChange ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "protagonistChange", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">中段风险</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">中段风险</span>
+                    <FullscreenEditor
+                      value={selectedVolume.midVolumeRisk ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "midVolumeRisk", value)}
+                      title="全屏编辑 - 中段风险"
+                      placeholder="请输入中段风险..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.midVolumeRisk ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "midVolumeRisk", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">卷末高潮</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">卷末高潮</span>
+                    <FullscreenEditor
+                      value={selectedVolume.climax ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "climax", value)}
+                      title="全屏编辑 - 卷末高潮"
+                      placeholder="请输入卷末高潮..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.climax ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "climax", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">兑现类型</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">兑现类型</span>
+                    <FullscreenEditor
+                      value={selectedVolume.payoffType ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "payoffType", value)}
+                      title="全屏编辑 - 兑现类型"
+                      placeholder="请输入兑现类型..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.payoffType ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "payoffType", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">下卷钩子</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">下卷钩子</span>
+                    <FullscreenEditor
+                      value={selectedVolume.nextVolumeHook ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "nextVolumeHook", value)}
+                      title="全屏编辑 - 下卷钩子"
+                      placeholder="请输入下卷钩子..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.nextVolumeHook ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "nextVolumeHook", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="text-xs text-muted-foreground">卷间重置点</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">卷间重置点</span>
+                    <FullscreenEditor
+                      value={selectedVolume.resetPoint ?? ""}
+                      onChange={(value) => onVolumeFieldChange(selectedVolume.id, "resetPoint", value)}
+                      title="全屏编辑 - 卷间重置点"
+                      placeholder="请输入卷间重置点..."
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" value={selectedVolume.resetPoint ?? ""} onChange={(event) => onVolumeFieldChange(selectedVolume.id, "resetPoint", event.target.value)} />
                 </label>
                 <label className="space-y-1 text-sm md:col-span-2">
-                  <span className="text-xs text-muted-foreground">本卷未兑现事项</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">本卷未兑现事项</span>
+                    <FullscreenEditor
+                      value={selectedVolume.openPayoffs.join("\n")}
+                      onChange={(value) => onOpenPayoffsChange(selectedVolume.id, value)}
+                      title="全屏编辑 - 本卷未兑现事项"
+                      placeholder="每行一个，或用中文逗号分隔。"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea className="min-h-[84px] w-full rounded-md border bg-background p-2" placeholder="每行一个，或用中文逗号分隔。" value={selectedVolume.openPayoffs.join("\n")} onChange={(event) => onOpenPayoffsChange(selectedVolume.id, event.target.value)} />
                 </label>
               </CardContent>

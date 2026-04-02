@@ -107,11 +107,11 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="h-[300px] flex flex-col">
+        <CardHeader className="shrink-0">
           <CardTitle>最近项目</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="flex-1 overflow-y-auto space-y-2">
           {novels.map((novel) => (
             <div key={novel.id} className="rounded-md border p-3 text-sm">
               <div className="font-medium">{novel.title}</div>

@@ -75,7 +75,7 @@ export default function KnowledgeEmbeddingSettingsCard({
     <Card>
       <CardHeader className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <CardTitle>Embedding 配置</CardTitle>
+          <CardTitle>嵌入配置</CardTitle>
           <Badge variant="outline">集合版本 v{form.collectionVersion}</Badge>
           {currentProvider ? <Badge variant="outline">{currentProvider.name}</Badge> : null}
           {modelQuery.data ? (
@@ -85,13 +85,13 @@ export default function KnowledgeEmbeddingSettingsCard({
           ) : null}
         </div>
         <div className="text-sm text-muted-foreground">
-          切换 Provider 或 Model 时，系统可以自动生成新的 Qdrant 集合名，避免向量维度冲突；同时你也可以手动指定集合名与重建策略。
+          切换提供商或模型时，系统可以自动生成新的 Qdrant 集合名，避免向量维度冲突；同时你也可以手动指定集合名与重建策略。
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Embedding Provider</div>
+            <div className="text-sm font-medium">嵌入提供商</div>
             <select
               className="w-full rounded-md border bg-background p-2 text-sm"
               value={form.embeddingProvider}
@@ -121,10 +121,10 @@ export default function KnowledgeEmbeddingSettingsCard({
           </div>
 
           <div className="space-y-2">
-            <div className="text-sm font-medium">Embedding Model</div>
+            <div className="text-sm font-medium">嵌入模型</div>
             {modelQuery.isLoading ? (
               <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                正在获取该供应商的 Embedding 模型列表...
+                正在获取该提供商的嵌入模型列表...
               </div>
             ) : modelOptions.length > 0 ? (
               <SearchableSelect
@@ -132,9 +132,9 @@ export default function KnowledgeEmbeddingSettingsCard({
                 onValueChange={(value) =>
                   setForm((prev) => ({ ...prev, embeddingModel: value }))}
                 options={modelOptions.map((model) => ({ value: model }))}
-                placeholder="选择 Embedding 模型"
-                searchPlaceholder="搜索 Embedding 模型"
-                emptyText="没有匹配的 Embedding 模型"
+                placeholder="选择嵌入模型"
+                searchPlaceholder="搜索嵌入模型"
+                emptyText="没有匹配的嵌入模型"
               />
             ) : null}
             <Input
@@ -147,8 +147,8 @@ export default function KnowledgeEmbeddingSettingsCard({
             {modelQuery.data ? (
               <div className="text-xs text-muted-foreground">
                 {modelQuery.data.source === "remote"
-                  ? `已获取 ${modelQuery.data.models.length} 个该供应商的 Embedding 模型。`
-                  : "当前展示的是内置 Embedding 模型列表；配置并启用 API Key 后会自动拉取供应商模型。"}
+                  ? `已获取 ${modelQuery.data.models.length} 个该提供商的嵌入模型。`
+                  : "当前展示的是内置嵌入模型列表；配置并启用 API Key 后会自动拉取提供商模型。"}
               </div>
             ) : null}
           </div>
@@ -241,7 +241,7 @@ export default function KnowledgeEmbeddingSettingsCard({
         </div>
 
         <div className="space-y-3">
-          <div className="text-sm font-medium">Embedding 请求参数</div>
+          <div className="text-sm font-medium">嵌入请求参数</div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <div className="text-sm font-medium">批处理大小</div>
@@ -275,7 +275,7 @@ export default function KnowledgeEmbeddingSettingsCard({
                   }))}
               />
               <div className="text-xs text-muted-foreground">
-                Embedding 接口请求超时时间，网络慢或模型较大时可以适当调高。
+                嵌入接口请求超时时间，网络慢或模型较大时可以适当调高。
               </div>
             </div>
 
@@ -321,7 +321,7 @@ export default function KnowledgeEmbeddingSettingsCard({
           onClick={onSave}
           disabled={isSaving || modelQuery.isLoading || !form.embeddingModel.trim() || !collectionNameToDisplay.trim()}
         >
-          {isSaving ? "保存中..." : "保存 Embedding 配置"}
+          {isSaving ? "保存中..." : "保存嵌入配置"}
         </Button>
       </CardContent>
     </Card>

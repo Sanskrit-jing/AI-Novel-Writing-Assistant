@@ -461,7 +461,7 @@ export function createChapterBoundarySchema() {
   }, z.object({
     conflictLevel: z.number().int().min(0).max(100),
     revealLevel: z.number().int().min(0).max(100),
-    targetWordCount: z.number().int().min(200).max(20000),
+    targetWordCount: z.number().int().min(200).max(20000).optional().default(2000),
     mustAvoid: z.string().trim().min(1),
     payoffRefs: z.array(z.string().trim().min(1)).default([]),
   }));

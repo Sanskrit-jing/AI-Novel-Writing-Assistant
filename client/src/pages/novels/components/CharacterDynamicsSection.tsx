@@ -183,7 +183,7 @@ export default function CharacterDynamicsSection(props: CharacterDynamicsSection
           ))}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="max-h-[600px] overflow-y-auto space-y-4">
         {overviewQuery.isLoading ? (
           <div className="rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
             正在加载动态角色系统...

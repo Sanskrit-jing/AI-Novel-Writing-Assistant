@@ -207,7 +207,23 @@ async function repairWithLlm<T>(
     throw new Error(`[${input.label}] JSON repair 后仍无法解析。错误：${repairParse.error}`);
   }
 
-  const final = input.schema.safeParse(repairParse.parsed);
+  let parsedData = repairParse.parsed;
+  // 特殊处理：如果Schema期望的是对象，但解析到的是数组，尝试包装成对象
+  if (Array.isArray(parsedData)) {
+    // 尝试包装成 { candidates: array } 的形式（适用于noveldirector.candidates）
+    const candidatesTest = input.schema.safeParse({ candidates: parsedData });
+    if (candidatesTest.success) {
+      parsedData = { candidates: parsedData };
+    } else {
+      // 尝试包装成 { chapters: array } 的形式（适用于novel.volume.chapter_list）
+      const chaptersTest = input.schema.safeParse({ chapters: parsedData });
+      if (chaptersTest.success) {
+        parsedData = { chapters: parsedData };
+      }
+    }
+  }
+
+  const final = input.schema.safeParse(parsedData);
   if (!final.success) {
     throw new Error(`[${input.label}] JSON repair 后仍未通过 Schema 校验。错误：${formatZodErrors(final.error)}`);
   }

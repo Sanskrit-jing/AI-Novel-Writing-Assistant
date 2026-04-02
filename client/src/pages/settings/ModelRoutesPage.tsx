@@ -294,13 +294,17 @@ export default function ModelRoutesPage() {
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => saveModelRouteMutation.mutate({
-                    taskType,
-                    provider: draft.provider,
-                    model: draft.model,
-                    temperature: Number(draft.temperature || 0.7),
-                    maxTokens: draft.maxTokens.trim() ? Number(draft.maxTokens) : null,
-                  })}
+                  onClick={() => {
+                    const temperature = parseFloat(draft.temperature || "0.7");
+                    const maxTokens = draft.maxTokens.trim() ? parseInt(draft.maxTokens, 10) : null;
+                    saveModelRouteMutation.mutate({
+                      taskType,
+                      provider: draft.provider,
+                      model: draft.model,
+                      temperature: isNaN(temperature) ? 0.7 : temperature,
+                      maxTokens: maxTokens === null || isNaN(maxTokens) ? null : maxTokens,
+                    });
+                  }}
                   disabled={saveModelRouteMutation.isPending || !draft.provider.trim() || !draft.model.trim()}
                 >
                   保存路由

@@ -80,8 +80,8 @@ export default function GenreManagementPage() {
         blockedParentIds={blockedParentIds}
       />
 
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="shrink-0 flex flex-row items-start justify-between gap-4">
           <div className="space-y-1">
             <CardTitle>题材基底库</CardTitle>
             <CardDescription>
@@ -95,7 +95,7 @@ export default function GenreManagementPage() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="flex-1 overflow-y-auto space-y-4">
           {genreTreeQuery.isLoading ? (
             <div className="text-sm text-muted-foreground">正在加载题材基底树...</div>
           ) : null}

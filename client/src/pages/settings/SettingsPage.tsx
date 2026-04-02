@@ -105,33 +105,33 @@ export default function SettingsPage() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Embedding Settings Moved</CardTitle>
+          <CardTitle>嵌入设置已移动</CardTitle>
           <CardDescription>
-            Embedding provider and model configuration now live in the knowledge module.
+            嵌入提供商和模型配置现在位于知识库模块中。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="rounded-md border p-3">
-              <div className="text-xs text-muted-foreground">Current embedding provider</div>
+              <div className="text-xs text-muted-foreground">当前嵌入提供商</div>
               <div className="mt-1 font-medium">{ragProvider?.name ?? ragSettings?.embeddingProvider ?? "-"}</div>
             </div>
             <div className="rounded-md border p-3">
-              <div className="text-xs text-muted-foreground">Current embedding model</div>
+              <div className="text-xs text-muted-foreground">当前嵌入模型</div>
               <div className="mt-1 font-medium">{ragSettings?.embeddingModel ?? "-"}</div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>Status</span>
+            <span>状态</span>
             <Badge variant={ragProvider?.isConfigured ? "default" : "outline"}>
-              {ragProvider?.isConfigured ? "API key ready" : "API key missing"}
+              {ragProvider?.isConfigured ? "API密钥就绪" : "缺少API密钥"}
             </Badge>
             <Badge variant={ragProvider?.isActive ? "default" : "outline"}>
-              {ragProvider?.isActive ? "Active" : "Inactive"}
+              {ragProvider?.isActive ? "活跃" : "非活跃"}
             </Badge>
           </div>
           <Button asChild>
-            <Link to="/knowledge?tab=settings">Open knowledge settings</Link>
+            <Link to="/knowledge?tab=settings">打开知识库设置</Link>
           </Button>
         </CardContent>
       </Card>
@@ -153,8 +153,8 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Model Providers</CardTitle>
-          <CardDescription>Manage provider API keys, default models, and connectivity tests.</CardDescription>
+          <CardTitle>模型提供商</CardTitle>
+          <CardDescription>管理提供商API密钥、默认模型和连接测试。</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           {providerConfigs.map((item) => (
@@ -172,10 +172,10 @@ export default function SettingsPage() {
                   variant={item.isConfigured ? "default" : "outline"}
                   className={item.isConfigured ? "bg-emerald-600 text-white hover:bg-emerald-600" : ""}
                 >
-                  {item.isConfigured ? "Configured" : "Not configured"}
+                  {item.isConfigured ? "已配置" : "未配置"}
                 </Badge>
               </div>
-              <div className="mb-2 text-xs text-muted-foreground">Current model: {item.currentModel}</div>
+              <div className="mb-2 text-xs text-muted-foreground">当前模型: {item.currentModel}</div>
               <div className="mb-3 space-y-2">
                 <div className="flex flex-wrap gap-1">
                   {(isProviderExpanded(item.provider)
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                     setActionResult("");
                   }}
                 >
-                  Configure
+                  配置
                 </Button>
                 <Button
                   size="sm"
@@ -229,7 +229,7 @@ export default function SettingsPage() {
                   }}
                   disabled={testMutation.isPending}
                 >
-                  Test
+                  测试
                 </Button>
                 <Button
                   size="sm"
@@ -241,8 +241,8 @@ export default function SettingsPage() {
                   disabled={!item.isConfigured || refreshModelsMutation.isPending}
                 >
                   {refreshModelsMutation.isPending && refreshModelsMutation.variables === item.provider
-                    ? "Refreshing..."
-                    : "Refresh models"}
+                    ? "刷新中..."
+                    : "刷新模型"}
                 </Button>
               </div>
             </div>
@@ -255,24 +255,24 @@ export default function SettingsPage() {
       <Dialog open={Boolean(editingProvider)} onOpenChange={(open) => !open && setEditingProvider("")}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Configure API Key</DialogTitle>
+            <DialogTitle>配置API密钥</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <Input
               type="password"
               value={form.key}
-              placeholder="Enter API key"
+              placeholder="输入API密钥"
               onChange={(event) => setForm((prev) => ({ ...prev, key: event.target.value }))}
             />
             <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">Available models</div>
+              <div className="text-xs text-muted-foreground">可用模型</div>
               <SearchableSelect
                 value={form.model}
                 onValueChange={(value) => setForm((prev) => ({ ...prev, model: value }))}
                 options={(editingConfig?.models ?? []).map((model) => ({ value: model }))}
-                placeholder="Select a model"
-                searchPlaceholder="Search models"
-                emptyText="No models available"
+                placeholder="选择模型"
+                searchPlaceholder="搜索模型"
+                emptyText="无可用模型"
               />
             </div>
             <div className="flex gap-2">
@@ -287,7 +287,7 @@ export default function SettingsPage() {
                 }
                 disabled={saveMutation.isPending || !form.key.trim() || !form.model.trim()}
               >
-                {saveMutation.isPending ? "Saving..." : "Save"}
+                {saveMutation.isPending ? "保存中..." : "保存"}
               </Button>
               <Button
                 variant="secondary"
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                 }
                 disabled={testMutation.isPending}
               >
-                Test
+                测试
               </Button>
             </div>
             {testResult ? <div className="text-sm text-muted-foreground">{testResult}</div> : null}

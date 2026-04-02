@@ -88,15 +88,15 @@ export default function ChapterExecutionActionPanel(props: ChapterExecutionActio
     : "请选择一个章节";
 
   return (
-    <Card className="self-start overflow-hidden border-border/70 lg:sticky lg:top-4">
-      <CardHeader className="gap-3 border-b bg-gradient-to-b from-muted/30 to-background pb-4">
+    <Card className="h-full overflow-hidden border-border/70 flex flex-col">
+      <CardHeader className="gap-2 border-b bg-gradient-to-b from-muted/30 to-background pb-2 shrink-0">
         <div className="space-y-1">
           <CardTitle className="text-base">AI 执行台</CardTitle>
-          <p className="text-sm leading-6 text-muted-foreground">
+          <p className="text-sm leading-5 text-muted-foreground">
             右侧保留动作和策略，让你一边看正文，一边决定下一步是继续写、审校还是修复。
           </p>
         </div>
-        <div className="rounded-2xl border border-border/70 bg-background/90 p-3">
+        <div className="rounded-2xl border border-border/70 bg-background/90 p-2">
           <div className="text-xs text-muted-foreground">当前操作对象</div>
           <div className="mt-1 text-sm font-semibold text-foreground">{selectedChapterLabel}</div>
           {selectedChapter ? (
@@ -107,7 +107,7 @@ export default function ChapterExecutionActionPanel(props: ChapterExecutionActio
           ) : null}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 pt-4">
+      <CardContent className="flex-1 overflow-y-auto space-y-4 pt-4">
         <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
           <div className="text-xs text-muted-foreground">主推进动作</div>
           <div className="mt-3 grid gap-2">

@@ -314,11 +314,11 @@ export default function PipelineTab(props: PipelineTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="h-[500px] flex flex-col">
+          <CardHeader className="shrink-0">
             <CardTitle>运行面板</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 overflow-y-auto space-y-3">
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => onRunPipeline()} disabled={isRunningPipeline || !hasCharacters}>启动批量生成</Button>
               <Button
@@ -375,11 +375,11 @@ export default function PipelineTab(props: PipelineTabProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
+        <Card className="h-[500px] flex flex-col">
+          <CardHeader className="shrink-0">
             <CardTitle>质量修复中心</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 overflow-y-auto space-y-3">
             <select
               className="w-full rounded-md border bg-background p-2 text-sm"
               value={selectedChapterId}

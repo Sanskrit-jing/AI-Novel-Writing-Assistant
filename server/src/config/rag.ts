@@ -21,25 +21,20 @@ function asInt(rawValue: string | undefined, fallback: number, min: number, max:
 
 export function asEmbeddingProvider(rawValue: string | undefined): EmbeddingProvider {
   const normalized = (rawValue ?? "").trim().toLowerCase();
-  if (normalized === "siliconflow") {
-    return "siliconflow";
+  if (normalized === "openai") {
+    return "openai";
   }
-  return "openai";
+  return "siliconflow";
 }
 
-export interface RagContextScope {
-  tenantId?: string;
-  novelId?: string;
-  worldId?: string;
-  ownerTypes?: string[];
-}
+// ...
 
 export const ragConfig = {
   enabled: isEnabled(process.env.RAG_ENABLED, true),
   verboseLog: isEnabled(process.env.RAG_VERBOSE_LOG, false),
   defaultTenantId: process.env.RAG_DEFAULT_TENANT ?? "default",
   embeddingProvider: asEmbeddingProvider(process.env.EMBEDDING_PROVIDER),
-  embeddingModel: process.env.EMBEDDING_MODEL ?? "text-embedding-3-small",
+  embeddingModel: process.env.EMBEDDING_MODEL ?? "BAAI/bge-large-zh-v1.5",
   embeddingVersion: asInt(process.env.EMBEDDING_VERSION, 1, 1, 100),
   embeddingBatchSize: asInt(process.env.EMBEDDING_BATCH_SIZE, 64, 1, 256),
   embeddingTimeoutMs: asInt(process.env.RAG_EMBEDDING_TIMEOUT_MS ?? process.env.RAG_HTTP_TIMEOUT_MS, 30000, 5000, 300000),
@@ -59,5 +54,5 @@ export const ragConfig = {
   workerMaxAttempts: asInt(process.env.RAG_WORKER_MAX_ATTEMPTS, 5, 1, 20),
   workerRetryBaseMs: asInt(process.env.RAG_WORKER_RETRY_BASE_MS, 5000, 1000, 300000),
   httpTimeoutMs: asInt(process.env.RAG_HTTP_TIMEOUT_MS, 30000, 1000, 300000),
-  providerPriority: ["openai", "siliconflow"] as Array<Extract<LLMProvider, "openai" | "siliconflow">>,
+  providerPriority: ["siliconflow", "openai"] as Array<Extract<LLMProvider, "openai" | "siliconflow">>,
 };

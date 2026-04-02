@@ -28,7 +28,7 @@ export default function CreativeHubThreadList({
 }: CreativeHubThreadListProps) {
   return (
     <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 shrink-0">
         <CardTitle className="text-base">线程列表</CardTitle>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">

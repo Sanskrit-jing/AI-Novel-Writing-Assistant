@@ -16,13 +16,18 @@ export default function Navbar() {
           <span className="text-[11px] text-muted-foreground">AI Novel Production Engine</span>
         </div>
       </div>
-      {isHome ? (
+      <div className="flex items-center gap-4">
         <Button asChild size="sm" variant="outline">
-          <Link to="/settings/model-routes">模型设置</Link>
+          <Link to="/publish">作品发布</Link>
         </Button>
-      ) : (
-        <LLMSelector />
-      )}
+        {isHome ? (
+          <Button asChild size="sm" variant="outline">
+            <Link to="/settings/model-routes">模型设置</Link>
+          </Button>
+        ) : (
+          <LLMSelector />
+        )}
+      </div>
     </header>
   );
 }

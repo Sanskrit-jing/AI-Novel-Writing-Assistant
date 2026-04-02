@@ -13,11 +13,11 @@ export default function WorldOverviewTab(props: WorldOverviewTabProps) {
   const { summary, sections, visualization } = props;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>{featureFlags.worldVisEnabled ? "总览与可视化" : "世界总览"}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 overflow-y-auto space-y-3">
         <div className="rounded-md border p-3 text-sm">
           <div className="font-medium mb-1">一句话概括</div>
           <div>{summary ?? "暂无"}</div>

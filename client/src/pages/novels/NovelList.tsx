@@ -112,72 +112,78 @@ export default function NovelList() {
         </Button>
       </div>
 
-      {novels.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>暂无小说</CardTitle>
-            <CardDescription>点击右上角“创建新小说”开始创作。</CardDescription>
-          </CardHeader>
-        </Card>
-      ) : (
-        <div className="grid gap-3 md:grid-cols-2">
-          {novels.map((novel) => (
-            <Card key={novel.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="line-clamp-1 text-lg">{novel.title}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={novel.status === "published" ? "default" : "secondary"}>
-                      {novel.status === "published" ? "已发布" : "草稿"}
-                    </Badge>
-                    {novel.writingMode === "continuation" ? (
-                      <Badge variant="outline">续写</Badge>
-                    ) : (
-                      <Badge variant="outline">原创</Badge>
-                    )}
-                  </div>
-                </div>
-                <CardDescription className="line-clamp-2">
-                  {novel.description || "暂无简介"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-xs text-muted-foreground">
-                  章节数：{novel._count.chapters}，角色数：{novel._count.characters}
-                </div>
-                {novel.world ? (
-                  <div className="text-xs text-muted-foreground">
-                    世界观：{novel.world.name}
-                  </div>
-                ) : null}
-                <div className="flex gap-2">
-                  <Button asChild size="sm">
-                    <Link to={`/novels/${novel.id}/edit`}>编辑</Link>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => downloadNovelMutation.mutate(novel.id)}
-                    disabled={downloadNovelMutation.isPending}
-                  >
-                    {downloadNovelMutation.isPending && downloadNovelMutation.variables === novel.id
-                      ? "导出中..."
-                      : "导出"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => deleteNovelMutation.mutate(novel.id)}
-                    disabled={deleteNovelMutation.isPending}
-                  >
-                    删除
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="shrink-0">
+          <CardTitle>小说列表</CardTitle>
+          <CardDescription>管理你的小说项目</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-y-auto">
+          {novels.length === 0 ? (
+            <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+              暂无小说，点击右上角“创建新小说”开始创作。
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {novels.map((novel) => (
+                <Card key={novel.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="line-clamp-1 text-lg">{novel.title}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={novel.status === "published" ? "default" : "secondary"}>
+                          {novel.status === "published" ? "已发布" : "草稿"}
+                        </Badge>
+                        {novel.writingMode === "continuation" ? (
+                          <Badge variant="outline">续写</Badge>
+                        ) : (
+                          <Badge variant="outline">原创</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <CardDescription className="line-clamp-2">
+                      {novel.description || "暂无简介"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="text-xs text-muted-foreground">
+                      章节数：{novel._count.chapters}，角色数：{novel._count.characters}
+                    </div>
+                    {novel.world ? (
+                      <div className="text-xs text-muted-foreground">
+                        世界观：{novel.world.name}
+                      </div>
+                    ) : null}
+                    <div className="flex gap-2">
+                      <Button asChild size="sm">
+                        <Link to={`/novels/${novel.id}/edit`}>编辑</Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => downloadNovelMutation.mutate(novel.id)}
+                        disabled={downloadNovelMutation.isPending}
+                      >
+                        {downloadNovelMutation.isPending && downloadNovelMutation.variables === novel.id
+                          ? "导出中..."
+                          : "导出"
+                        }
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => deleteNovelMutation.mutate(novel.id)}
+                        disabled={deleteNovelMutation.isPending}
+                      >
+                        删除
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

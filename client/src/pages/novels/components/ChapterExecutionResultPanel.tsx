@@ -138,8 +138,8 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
   const qualityOverall = chapterQualityReport?.overall ?? selectedChapter.qualityScore ?? null;
 
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden border-border/70">
+    <div className="h-full flex flex-col space-y-4">
+      <Card className="flex-1 overflow-hidden border-border/70 flex flex-col">
         <CardHeader className="gap-4 border-b bg-gradient-to-b from-muted/30 via-background to-background pb-4">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-3">
@@ -175,8 +175,8 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
           </div>
         </CardHeader>
 
-        <CardContent className="pt-5">
-          <Tabs value={assetTab} onValueChange={(value) => onAssetTabChange(value as AssetTabKey)}>
+        <CardContent className="flex-1 overflow-hidden pt-5">
+          <Tabs value={assetTab} onValueChange={(value) => onAssetTabChange(value as AssetTabKey)} className="h-full flex flex-col">
             <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-2xl bg-muted/50 p-1.5">
               <TabsTrigger value="content" className="rounded-xl">正文主稿</TabsTrigger>
               <TabsTrigger value="taskSheet" className="rounded-xl">任务单</TabsTrigger>
@@ -185,7 +185,7 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
               <TabsTrigger value="repair" className="rounded-xl">修复记录</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="content" className="space-y-4">
+            <TabsContent value="content" className="flex-1 overflow-y-auto space-y-4">
               {writingInOtherChapter ? (
                 <WorkspaceNotice
                   title="还有其他章节正在后台写作"
@@ -250,7 +250,7 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
               </div>
             </TabsContent>
 
-            <TabsContent value="taskSheet" className="space-y-4">
+            <TabsContent value="taskSheet" className="flex-1 overflow-y-auto space-y-4">
               <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                 <div className="rounded-2xl border bg-muted/20 p-5">
                   <div className="text-xs text-muted-foreground">本章任务单</div>
@@ -265,7 +265,7 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
               </div>
             </TabsContent>
 
-            <TabsContent value="sceneCards" className="space-y-4">
+            <TabsContent value="sceneCards" className="flex-1 overflow-y-auto space-y-4">
               <div className="rounded-2xl border bg-muted/20 p-5">
                 <div className="text-xs text-muted-foreground">场景拆解</div>
                 <div className="mt-3 whitespace-pre-wrap text-sm leading-7">
@@ -275,7 +275,7 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
               <PanelHintCard title="本章目标" content={chapterObjective} />
             </TabsContent>
 
-            <TabsContent value="quality" className="space-y-4">
+            <TabsContent value="quality" className="flex-1 overflow-y-auto space-y-4">
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <MetricBadge label="总体" value={String(chapterQualityReport?.overall ?? selectedChapter.qualityScore ?? "-")} />
                 <MetricBadge label="连贯性" value={String(chapterQualityReport?.coherence ?? "-")} />
@@ -318,7 +318,7 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
               </div>
             </TabsContent>
 
-            <TabsContent value="repair" className="space-y-4">
+            <TabsContent value="repair" className="flex-1 overflow-y-auto space-y-4">
               {repairingOtherChapter ? (
                 <WorkspaceNotice
                   title="还有其他章节正在后台修复"
@@ -347,19 +347,19 @@ export default function ChapterExecutionResultPanel(props: ChapterExecutionResul
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="context">
-        <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-2xl bg-muted/50 p-1.5">
+      <Tabs defaultValue="context" className="flex-1 flex flex-col overflow-hidden">
+        <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-2xl bg-muted/50 p-1.5 shrink-0">
           <TabsTrigger value="context" className="rounded-xl">本章目标与上下文</TabsTrigger>
           <TabsTrigger value="audit" className="rounded-xl">当前问题与修复建议</TabsTrigger>
         </TabsList>
-        <TabsContent value="context" className="pt-2">
+        <TabsContent value="context" className="flex-1 overflow-y-auto pt-2">
           <ChapterRuntimeContextCard
             runtimePackage={null}
             chapterPlan={chapterPlan}
             stateSnapshot={latestStateSnapshot}
           />
         </TabsContent>
-        <TabsContent value="audit" className="pt-2">
+        <TabsContent value="audit" className="flex-1 overflow-y-auto pt-2">
           <ChapterRuntimeAuditCard
             runtimePackage={null}
             auditReports={chapterAuditReports}

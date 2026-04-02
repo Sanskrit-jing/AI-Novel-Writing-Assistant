@@ -2,6 +2,8 @@ import type { StoryConflictLayers, StoryMacroField } from "@ai-novel/shared/type
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import FullscreenEditor from "@/components/common/FullscreenEditor";
+import { Maximize2 } from "lucide-react";
 import type { StoryMacroTabProps } from "./NovelEditView.types";
 import {
   ENGINE_TEXT_FIELDS,
@@ -40,7 +42,24 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">故事想法输入</div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-foreground">故事想法输入</div>
+              <FullscreenEditor
+                value={props.storyInput}
+                onChange={(value) => props.onStoryInputChange(value)}
+                title="全屏编辑 - 故事想法输入"
+                placeholder="用自然语言描述故事想法、想要的压迫感、想避免的风格和结局倾向。"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  title="全屏编辑"
+                >
+                  <Maximize2 className="h-3 w-3" />
+                </Button>
+              </FullscreenEditor>
+            </div>
             <textarea
               value={props.storyInput}
               onChange={(event) => props.onStoryInputChange(event.target.value)}
@@ -85,32 +104,49 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
                 const value = expansion[item.field as keyof typeof expansion];
                 return (
                   <div key={item.field} className="space-y-2 rounded-xl border border-border/70 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="text-sm font-medium text-foreground">{item.label}</div>
-                      <FieldActions
-                        field={item.field}
-                        lockedFields={props.lockedFields}
-                        regeneratingField={props.regeneratingField}
-                        storyInput={props.storyInput}
-                        onToggleLock={props.onToggleLock}
-                        onRegenerateField={props.onRegenerateField}
-                      />
-                    </div>
-                    {item.multiline ? (
-                      <textarea
-                        value={typeof value === "string" ? value : ""}
-                        onChange={(event) => props.onFieldChange(item.field, event.target.value)}
-                        placeholder={item.placeholder}
-                        className={textareaClassName()}
-                      />
-                    ) : (
-                      <Input
-                        value={typeof value === "string" ? value : ""}
-                        onChange={(event) => props.onFieldChange(item.field, event.target.value)}
-                        placeholder={item.placeholder}
-                      />
-                    )}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-medium text-foreground">{item.label}</div>
+                  <div className="flex items-center gap-2">
+                    <FieldActions
+                      field={item.field}
+                      lockedFields={props.lockedFields}
+                      regeneratingField={props.regeneratingField}
+                      storyInput={props.storyInput}
+                      onToggleLock={props.onToggleLock}
+                      onRegenerateField={props.onRegenerateField}
+                    />
+                    <FullscreenEditor
+                      value={typeof value === "string" ? value : ""}
+                      onChange={(val) => props.onFieldChange(item.field, val)}
+                      title={`全屏编辑 - ${item.label}`}
+                      placeholder={item.placeholder}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
                   </div>
+                </div>
+                {item.multiline ? (
+                  <textarea
+                    value={typeof value === "string" ? value : ""}
+                    onChange={(event) => props.onFieldChange(item.field, event.target.value)}
+                    placeholder={item.placeholder}
+                    className={textareaClassName()}
+                  />
+                ) : (
+                  <Input
+                    value={typeof value === "string" ? value : ""}
+                    onChange={(event) => props.onFieldChange(item.field, event.target.value)}
+                    placeholder={item.placeholder}
+                  />
+                )}
+              </div>
                 );
               })}
             </div>
@@ -129,7 +165,27 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
               </div>
               <div className="grid gap-4 xl:grid-cols-3">
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">外部压迫</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">外部压迫</div>
+                    <FullscreenEditor
+                      value={expansion.conflict_layers.external}
+                      onChange={(value) => props.onFieldChange("conflict_layers", {
+                        ...expansion.conflict_layers,
+                        external: value,
+                      })}
+                      title="全屏编辑 - 外部压迫"
+                      placeholder="外部系统、威胁或环境如何持续压迫主角。"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea
                     value={expansion.conflict_layers.external}
                     onChange={(event) => props.onFieldChange("conflict_layers", {
@@ -141,7 +197,27 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">内部崩塌</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">内部崩塌</div>
+                    <FullscreenEditor
+                      value={expansion.conflict_layers.internal}
+                      onChange={(value) => props.onFieldChange("conflict_layers", {
+                        ...expansion.conflict_layers,
+                        internal: value,
+                      })}
+                      title="全屏编辑 - 内部崩塌"
+                      placeholder="主角内在恐惧、欲望或误判怎样反噬自己。"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea
                     value={expansion.conflict_layers.internal}
                     onChange={(event) => props.onFieldChange("conflict_layers", {
@@ -153,7 +229,27 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">关系压力</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">关系压力</div>
+                    <FullscreenEditor
+                      value={expansion.conflict_layers.relational}
+                      onChange={(value) => props.onFieldChange("conflict_layers", {
+                        ...expansion.conflict_layers,
+                        relational: value,
+                      })}
+                      title="全屏编辑 - 关系压力"
+                      placeholder="关键关系如何制造选择代价和情感张力。"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="全屏编辑"
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </Button>
+                    </FullscreenEditor>
+                  </div>
                   <textarea
                     value={expansion.conflict_layers.relational}
                     onChange={(event) => props.onFieldChange("conflict_layers", {
@@ -170,14 +266,34 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
             <div className="space-y-2 rounded-xl border border-border/70 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="text-sm font-medium text-foreground">高张力场面种子</div>
-                <FieldActions
-                  field="setpiece_seeds"
-                  lockedFields={props.lockedFields}
-                  regeneratingField={props.regeneratingField}
-                  storyInput={props.storyInput}
-                  onToggleLock={props.onToggleLock}
-                  onRegenerateField={props.onRegenerateField}
-                />
+                <div className="flex items-center gap-2">
+                  <FieldActions
+                    field="setpiece_seeds"
+                    lockedFields={props.lockedFields}
+                    regeneratingField={props.regeneratingField}
+                    storyInput={props.storyInput}
+                    onToggleLock={props.onToggleLock}
+                    onRegenerateField={props.onRegenerateField}
+                  />
+                  <FullscreenEditor
+                    value={listToText(expansion.setpiece_seeds)}
+                    onChange={(value) => props.onFieldChange(
+                      "setpiece_seeds",
+                      value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+                    )}
+                    title="全屏编辑 - 高张力场面种子"
+                    placeholder="每行一个高张力场面。"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title="全屏编辑"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                    </Button>
+                  </FullscreenEditor>
+                </div>
               </div>
               <textarea
                 value={listToText(expansion.setpiece_seeds)}
@@ -222,30 +338,47 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
             return (
               <div key={item.field} className="space-y-2 rounded-xl border border-border/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-sm font-medium text-foreground">{item.label}</div>
-                  <FieldActions
-                    field={item.field}
-                    lockedFields={props.lockedFields}
-                    regeneratingField={props.regeneratingField}
-                    storyInput={props.storyInput}
-                    onToggleLock={props.onToggleLock}
-                    onRegenerateField={props.onRegenerateField}
-                  />
-                </div>
-                {item.multiline ? (
-                  <textarea
-                    value={typeof value === "string" ? value : ""}
-                    onChange={(event) => props.onFieldChange(item.field, event.target.value)}
-                    placeholder={item.placeholder}
-                    className={textareaClassName()}
-                  />
-                ) : (
-                  <Input
-                    value={typeof value === "string" ? value : ""}
-                    onChange={(event) => props.onFieldChange(item.field, event.target.value)}
-                    placeholder={item.placeholder}
-                  />
-                )}
+                      <div className="text-sm font-medium text-foreground">{item.label}</div>
+                      <div className="flex items-center gap-2">
+                        <FieldActions
+                          field={item.field}
+                          lockedFields={props.lockedFields}
+                          regeneratingField={props.regeneratingField}
+                          storyInput={props.storyInput}
+                          onToggleLock={props.onToggleLock}
+                          onRegenerateField={props.onRegenerateField}
+                        />
+                        <FullscreenEditor
+                          value={typeof value === "string" ? value : ""}
+                          onChange={(val) => props.onFieldChange(item.field, val)}
+                          title={`全屏编辑 - ${item.label}`}
+                          placeholder={item.placeholder}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="全屏编辑"
+                          >
+                            <Maximize2 className="h-3 w-3" />
+                          </Button>
+                        </FullscreenEditor>
+                      </div>
+                    </div>
+                    {item.multiline ? (
+                      <textarea
+                        value={typeof value === "string" ? value : ""}
+                        onChange={(event) => props.onFieldChange(item.field, event.target.value)}
+                        placeholder={item.placeholder}
+                        className={textareaClassName()}
+                      />
+                    ) : (
+                      <Input
+                        value={typeof value === "string" ? value : ""}
+                        onChange={(event) => props.onFieldChange(item.field, event.target.value)}
+                        placeholder={item.placeholder}
+                      />
+                    )}
               </div>
             );
           })}
@@ -253,14 +386,34 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
           <div className="space-y-2 rounded-xl border border-border/70 p-4 xl:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm font-medium text-foreground">关键兑现点</div>
-              <FieldActions
-                field="major_payoffs"
-                lockedFields={props.lockedFields}
-                regeneratingField={props.regeneratingField}
-                storyInput={props.storyInput}
-                onToggleLock={props.onToggleLock}
-                onRegenerateField={props.onRegenerateField}
-              />
+              <div className="flex items-center gap-2">
+                <FieldActions
+                  field="major_payoffs"
+                  lockedFields={props.lockedFields}
+                  regeneratingField={props.regeneratingField}
+                  storyInput={props.storyInput}
+                  onToggleLock={props.onToggleLock}
+                  onRegenerateField={props.onRegenerateField}
+                />
+                <FullscreenEditor
+                  value={listToText(props.decomposition.major_payoffs)}
+                  onChange={(value) => props.onFieldChange(
+                    "major_payoffs",
+                    value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+                  )}
+                  title="全屏编辑 - 关键兑现点"
+                  placeholder="每行一个关键兑现点。"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    title="全屏编辑"
+                  >
+                    <Maximize2 className="h-3 w-3" />
+                  </Button>
+                </FullscreenEditor>
+              </div>
             </div>
             <textarea
               value={listToText(props.decomposition.major_payoffs)}
@@ -285,14 +438,34 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
         <CardContent className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-sm font-medium text-foreground">叙事规则</div>
-            <FieldActions
-              field="constraints"
-              lockedFields={props.lockedFields}
-              regeneratingField={props.regeneratingField}
-              storyInput={props.storyInput}
-              onToggleLock={props.onToggleLock}
-              onRegenerateField={props.onRegenerateField}
-            />
+            <div className="flex items-center gap-2">
+              <FieldActions
+                field="constraints"
+                lockedFields={props.lockedFields}
+                regeneratingField={props.regeneratingField}
+                storyInput={props.storyInput}
+                onToggleLock={props.onToggleLock}
+                onRegenerateField={props.onRegenerateField}
+              />
+              <FullscreenEditor
+                value={listToText(props.constraints)}
+                onChange={(value) => props.onFieldChange(
+                  "constraints",
+                  value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+                )}
+                title="全屏编辑 - 叙事规则"
+                placeholder="每行一条必须遵守的叙事规则。"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  title="全屏编辑"
+                >
+                  <Maximize2 className="h-3 w-3" />
+                </Button>
+              </FullscreenEditor>
+            </div>
           </div>
           <textarea
             value={listToText(props.constraints)}
@@ -431,7 +604,24 @@ export default function StoryMacroPlanTab(props: StoryMacroTabProps) {
             />
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium text-foreground">主角当前处境</div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-foreground">主角当前处境</div>
+              <FullscreenEditor
+                value={props.state.protagonistState}
+                onChange={(value) => props.onStateChange("protagonistState", value)}
+                title="全屏编辑 - 主角当前处境"
+                placeholder="例如：仍在否认真相，但已经无法退出。"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  title="全屏编辑"
+                >
+                  <Maximize2 className="h-3 w-3" />
+                </Button>
+              </FullscreenEditor>
+            </div>
             <Input
               value={props.state.protagonistState}
               onChange={(event) => props.onStateChange("protagonistState", event.target.value)}
