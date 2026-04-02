@@ -1,16 +1,15 @@
 import { useMemo } from "react";
-import type { Character, CharacterCastRole, CharacterTimeline } from "@ai-novel/shared/types/novel";
+import type { Character, CharacterCastRole, CharacterGender, CharacterTimeline } from "@ai-novel/shared/types/novel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import FullscreenEditor from "@/components/common/FullscreenEditor";
-import { Maximize2 } from "lucide-react";
 import { getLastAppearanceChapter } from "./characterPanel.utils";
 
 interface CharacterFormState {
   name: string;
   role: string;
+  gender: CharacterGender;
   personality: string;
   background: string;
   development: string;
@@ -50,11 +49,25 @@ const CAST_ROLE_LABELS: Record<CharacterCastRole, string> = {
   catalyst: "催化者",
 };
 
+const CHARACTER_GENDER_LABELS: Record<CharacterGender, string> = {
+  male: "男",
+  female: "女",
+  other: "其他",
+  unknown: "未知",
+};
+
 function getCastRoleLabel(castRole?: CharacterCastRole | null): string {
   if (!castRole) {
     return "未定义";
   }
   return CAST_ROLE_LABELS[castRole] ?? castRole;
+}
+
+function getCharacterGenderLabel(gender?: CharacterGender | null): string {
+  if (!gender) {
+    return "未知";
+  }
+  return CHARACTER_GENDER_LABELS[gender] ?? gender;
 }
 
 function getSecretStatus(selectedCharacter?: Character): string {
@@ -125,47 +138,43 @@ export default function CharacterAssetWorkspace(props: CharacterAssetWorkspacePr
         </div>
       </CardHeader>
       <CardContent className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="rounded-xl border p-4 space-y-2">
+        <div className="space-y-2">
           <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Character List
           </div>
           {characters.length > 0 ? (
-            <div className="max-h-[460px] space-y-2 overflow-auto pr-1">
+            <div className="max-h-[560px] space-y-2 overflow-auto pr-1">
               {characters.map((character) => (
-                <div
+                <button
                   key={character.id}
-                  className={`rounded-xl border p-3 transition ${
+                  type="button"
+                  onClick={() => onSelectedCharacterChange(character.id)}
+                  className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition ${
                     selectedCharacterId === character.id
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border/70 hover:border-primary/30 hover:bg-muted/30"
                   }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => onSelectedCharacterChange(character.id)}
-                    className="flex w-full items-center justify-between text-left"
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{character.name}</div>
+                    <div className="text-xs text-muted-foreground">{character.role}</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={isDeletingCharacter && deletingCharacterId === character.id}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      const confirmed = window.confirm(`确认删除角色“${character.name}”？此操作不可恢复。`);
+                      if (!confirmed) {
+                        return;
+                      }
+                      onDeleteCharacter(character.id);
+                    }}
                   >
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{character.name}</div>
-                      <div className="text-xs text-muted-foreground">{character.role}</div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      disabled={isDeletingCharacter && deletingCharacterId === character.id}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        const confirmed = window.confirm(`确认删除角色“${character.name}”？此操作不可恢复。`);
-                        if (!confirmed) {
-                          return;
-                        }
-                        onDeleteCharacter(character.id);
-                      }}
-                    >
-                      {isDeletingCharacter && deletingCharacterId === character.id ? "删除中..." : "删除"}
-                    </Button>
-                  </button>
-                </div>
+                    {isDeletingCharacter && deletingCharacterId === character.id ? "删除中..." : "删除"}
+                  </Button>
+                </button>
               ))}
             </div>
           ) : (
@@ -176,17 +185,18 @@ export default function CharacterAssetWorkspace(props: CharacterAssetWorkspacePr
         </div>
 
         {!selectedCharacter ? (
-          <div className="rounded-xl border p-4 flex min-h-[560px] items-center justify-center text-center text-sm text-muted-foreground">
+          <div className="flex min-h-[260px] items-center justify-center rounded-xl border border-dashed px-6 text-center text-sm text-muted-foreground">
             先从左侧选择一个角色，再进入详细资产编辑。
           </div>
         ) : (
-          <div className="rounded-xl border p-4 max-h-[560px] overflow-auto space-y-4">
+          <div className="space-y-4">
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="rounded-xl border p-3">
                 <div className="text-xs text-muted-foreground">基础身份</div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <div className="font-medium">{selectedCharacter.name}</div>
                   <Badge variant="outline">{getCastRoleLabel(selectedCharacter.castRole)}</Badge>
+                  <Badge variant="secondary">{getCharacterGenderLabel(selectedCharacter.gender)}</Badge>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">身份：{selectedCharacter.role || "未定义"}</div>
                 <div className="text-xs text-muted-foreground">
@@ -195,44 +205,8 @@ export default function CharacterAssetWorkspace(props: CharacterAssetWorkspacePr
               </div>
               <div className="rounded-xl border p-3">
                 <div className="text-xs text-muted-foreground">运行状态</div>
-                <div className="mt-2 text-xs text-muted-foreground">
-                  <span>当前状态：</span>
-                  <FullscreenEditor
-                    value={selectedCharacter.currentState || ""}
-                    onChange={(value) => onCharacterFormChange("currentState", value)}
-                    title="全屏编辑 - 当前状态"
-                    placeholder="请输入当前状态..."
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 inline-flex items-center justify-center"
-                      title="全屏编辑"
-                    >
-                      <Maximize2 className="h-3 w-3" />
-                    </Button>
-                  </FullscreenEditor>
-                  <span>{selectedCharacter.currentState || "待补全"}</span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  <span>当前目标：</span>
-                  <FullscreenEditor
-                    value={selectedCharacter.currentGoal || ""}
-                    onChange={(value) => onCharacterFormChange("currentGoal", value)}
-                    title="全屏编辑 - 当前目标"
-                    placeholder="请输入当前目标..."
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 inline-flex items-center justify-center"
-                      title="全屏编辑"
-                    >
-                      <Maximize2 className="h-3 w-3" />
-                    </Button>
-                  </FullscreenEditor>
-                  <span>{selectedCharacter.currentGoal || "待补全"}</span>
-                </div>
+                <div className="mt-2 text-xs text-muted-foreground">当前状态：{selectedCharacter.currentState || "待补全"}</div>
+                <div className="text-xs text-muted-foreground">当前目标：{selectedCharacter.currentGoal || "待补全"}</div>
                 <div className="text-xs text-muted-foreground">情绪基调：{emotionSignal}</div>
                 <div className="text-xs text-muted-foreground">秘密状态：{secretStatus}</div>
               </div>
@@ -262,187 +236,59 @@ export default function CharacterAssetWorkspace(props: CharacterAssetWorkspacePr
               <summary className="cursor-pointer font-medium">完整设定与编辑</summary>
               <div className="mt-3 space-y-2">
                 <div className="grid gap-2 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">角色名称</span>
-                      <FullscreenEditor
-                        value={characterForm.name}
-                        onChange={(value) => onCharacterFormChange("name", value)}
-                        title="全屏编辑 - 角色名称"
-                        placeholder="请输入角色名称..."
-                      >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          title="全屏编辑"
-                        >
-                          <Maximize2 className="h-3 w-3" />
-                        </Button>
-                      </FullscreenEditor>
-                    </div>
-                    <Input
-                      placeholder="角色名称"
-                      value={characterForm.name}
-                      onChange={(event) => onCharacterFormChange("name", event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">角色定位</span>
-                      <FullscreenEditor
-                        value={characterForm.role}
-                        onChange={(value) => onCharacterFormChange("role", value)}
-                        title="全屏编辑 - 角色定位"
-                        placeholder="请输入角色定位..."
-                      >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          title="全屏编辑"
-                        >
-                          <Maximize2 className="h-3 w-3" />
-                        </Button>
-                      </FullscreenEditor>
-                    </div>
-                    <Input
-                      placeholder="角色定位"
-                      value={characterForm.role}
-                      onChange={(event) => onCharacterFormChange("role", event.target.value)}
-                    />
-                  </div>
+                  <Input
+                    placeholder="角色名称"
+                    value={characterForm.name}
+                    onChange={(event) => onCharacterFormChange("name", event.target.value)}
+                  />
+                  <Input
+                    placeholder="角色定位"
+                    value={characterForm.role}
+                    onChange={(event) => onCharacterFormChange("role", event.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">当前状态</span>
-                      <FullscreenEditor
-                        value={characterForm.currentState}
-                        onChange={(value) => onCharacterFormChange("currentState", value)}
-                        title="全屏编辑 - 当前状态"
-                        placeholder="请输入当前状态..."
-                      >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          title="全屏编辑"
-                        >
-                          <Maximize2 className="h-3 w-3" />
-                        </Button>
-                      </FullscreenEditor>
-                    </div>
-                    <Input
-                      placeholder="当前状态（例如：重伤闭关）"
-                      value={characterForm.currentState}
-                      onChange={(event) => onCharacterFormChange("currentState", event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">当前目标</span>
-                      <FullscreenEditor
-                        value={characterForm.currentGoal}
-                        onChange={(value) => onCharacterFormChange("currentGoal", value)}
-                        title="全屏编辑 - 当前目标"
-                        placeholder="请输入当前目标..."
-                      >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          title="全屏编辑"
-                        >
-                          <Maximize2 className="h-3 w-3" />
-                        </Button>
-                      </FullscreenEditor>
-                    </div>
-                    <Input
-                      placeholder="当前目标（例如：三个月内突破）"
-                      value={characterForm.currentGoal}
-                      onChange={(event) => onCharacterFormChange("currentGoal", event.target.value)}
-                    />
-                  </div>
+                  <select
+                    className="w-full rounded-md border bg-background p-2 text-sm"
+                    value={characterForm.gender}
+                    onChange={(event) => onCharacterFormChange("gender", event.target.value)}
+                  >
+                    <option value="unknown">性别：未知</option>
+                    <option value="male">性别：男</option>
+                    <option value="female">性别：女</option>
+                    <option value="other">性别：其他</option>
+                  </select>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">性格补充</span>
-                    <FullscreenEditor
-                      value={characterForm.personality}
-                      onChange={(value) => onCharacterFormChange("personality", value)}
-                      title="全屏编辑 - 性格补充"
-                      placeholder="请输入性格补充..."
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="全屏编辑"
-                      >
-                        <Maximize2 className="h-3 w-3" />
-                      </Button>
-                    </FullscreenEditor>
-                  </div>
-                  <textarea
-                    className="min-h-[80px] w-full rounded-md border bg-background p-2 text-sm"
-                    placeholder="性格补充"
-                    value={characterForm.personality}
-                    onChange={(event) => onCharacterFormChange("personality", event.target.value)}
+                <div className="grid gap-2 md:grid-cols-2">
+                  <Input
+                    placeholder="当前状态（例如：重伤闭关）"
+                    value={characterForm.currentState}
+                    onChange={(event) => onCharacterFormChange("currentState", event.target.value)}
+                  />
+                  <Input
+                    placeholder="当前目标（例如：三个月内突破）"
+                    value={characterForm.currentGoal}
+                    onChange={(event) => onCharacterFormChange("currentGoal", event.target.value)}
                   />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">背景补充</span>
-                    <FullscreenEditor
-                      value={characterForm.background}
-                      onChange={(value) => onCharacterFormChange("background", value)}
-                      title="全屏编辑 - 背景补充"
-                      placeholder="请输入背景补充..."
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="全屏编辑"
-                      >
-                        <Maximize2 className="h-3 w-3" />
-                      </Button>
-                    </FullscreenEditor>
-                  </div>
-                  <textarea
-                    className="min-h-[80px] w-full rounded-md border bg-background p-2 text-sm"
-                    placeholder="背景补充"
-                    value={characterForm.background}
-                    onChange={(event) => onCharacterFormChange("background", event.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">成长弧补充</span>
-                    <FullscreenEditor
-                      value={characterForm.development}
-                      onChange={(value) => onCharacterFormChange("development", value)}
-                      title="全屏编辑 - 成长弧补充"
-                      placeholder="请输入成长弧补充..."
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="全屏编辑"
-                      >
-                        <Maximize2 className="h-3 w-3" />
-                      </Button>
-                    </FullscreenEditor>
-                  </div>
-                  <textarea
-                    className="min-h-[80px] w-full rounded-md border bg-background p-2 text-sm"
-                    placeholder="成长弧补充"
-                    value={characterForm.development}
-                    onChange={(event) => onCharacterFormChange("development", event.target.value)}
-                  />
-                </div>
+                <textarea
+                  className="min-h-[80px] w-full rounded-md border bg-background p-2 text-sm"
+                  placeholder="性格补充"
+                  value={characterForm.personality}
+                  onChange={(event) => onCharacterFormChange("personality", event.target.value)}
+                />
+                <textarea
+                  className="min-h-[80px] w-full rounded-md border bg-background p-2 text-sm"
+                  placeholder="背景补充"
+                  value={characterForm.background}
+                  onChange={(event) => onCharacterFormChange("background", event.target.value)}
+                />
+                <textarea
+                  className="min-h-[80px] w-full rounded-md border bg-background p-2 text-sm"
+                  placeholder="成长弧补充"
+                  value={characterForm.development}
+                  onChange={(event) => onCharacterFormChange("development", event.target.value)}
+                />
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" onClick={onSaveCharacter} disabled={isSavingCharacter}>
                     {isSavingCharacter ? "保存中..." : "保存角色资产"}

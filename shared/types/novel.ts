@@ -1,4 +1,5 @@
 import type { BookAnalysisSectionKey } from "./bookAnalysis";
+import type { BookContract } from "./novelWorkflow";
 import type { NovelStoryMode } from "./storyMode";
 export type {
   BaseCharacter,
@@ -7,6 +8,7 @@ export type {
   CharacterCastOption,
   CharacterCastOptionClearResult,
   CharacterCastOptionDeleteResult,
+  CharacterGender,
   CharacterCastOptionMember,
   CharacterCastOptionRelation,
   CharacterCastRole,
@@ -108,6 +110,7 @@ export interface Novel {
   volumes?: VolumePlan[];
   volumeSource?: "volume" | "legacy" | "empty";
   activeVolumeVersionId?: string | null;
+  bookContract?: BookContract | null;
   genreId?: string | null;
   primaryStoryModeId?: string | null;
   secondaryStoryModeId?: string | null;

@@ -4,13 +4,17 @@ import type {
   NarrativePov,
   Novel,
   PacePreference,
+  PipelineJobStatus,
   ProjectMode,
   ProjectProgressStatus,
   StoryPlanLevel,
 } from "./novel";
 import type { LLMProvider } from "./llm";
 import type { BookAnalysisSectionKey } from "./bookAnalysis";
+import type { NovelWorkflowResumeTarget } from "./novelWorkflow";
 import type { StoryMacroPlan } from "./storyMacro";
+import type { BookContract, BookContractDraft } from "./novelWorkflow";
+import type { TitleFactorySuggestion } from "./title";
 
 export const DIRECTOR_CORRECTION_PRESETS = [
   {
@@ -47,6 +51,85 @@ export const DIRECTOR_CORRECTION_PRESETS = [
 
 export type DirectorCorrectionPreset = typeof DIRECTOR_CORRECTION_PRESETS[number]["value"];
 
+export const DIRECTOR_CANDIDATE_SETUP_STEPS = [
+  {
+    key: "candidate_seed_alignment",
+    label: "整理项目设定",
+    description: "先把灵感、题材、目标读者和章节规模压成稳定输入。",
+  },
+  {
+    key: "candidate_project_framing",
+    label: "对齐书级 framing",
+    description: "把书级卖点、前 30 章承诺和气质约束转成候选生成参考。",
+  },
+  {
+    key: "candidate_direction_batch",
+    label: "生成书级方案",
+    description: "产出当前可继续推进整本规划的候选方向。",
+  },
+  {
+    key: "candidate_title_pack",
+    label: "强化标题组",
+    description: "为每套候选补一组更适合封面展示和点击测试的书名。",
+  },
+] as const;
+
+export type DirectorCandidateSetupStepKey = typeof DIRECTOR_CANDIDATE_SETUP_STEPS[number]["key"];
+
+export const DIRECTOR_RUN_MODES = [
+  "auto_to_ready",
+  "auto_to_execution",
+  "stage_review",
+] as const;
+
+export type DirectorRunMode = typeof DIRECTOR_RUN_MODES[number];
+
+export type DirectorContinuationMode = "resume" | "auto_execute_front10";
+
+export interface DirectorAutoExecutionState {
+  enabled: boolean;
+  startOrder?: number;
+  endOrder?: number;
+  totalChapterCount?: number;
+  pipelineJobId?: string | null;
+  pipelineStatus?: PipelineJobStatus | null;
+}
+
+export const DIRECTOR_TAKEOVER_START_PHASES = [
+  "story_macro",
+  "character_setup",
+  "volume_strategy",
+  "structured_outline",
+] as const;
+
+export type DirectorTakeoverStartPhase = typeof DIRECTOR_TAKEOVER_START_PHASES[number];
+
+export const DIRECTOR_LOCK_SCOPES = [
+  "basic",
+  "story_macro",
+  "character",
+  "outline",
+  "structured",
+  "chapter",
+  "pipeline",
+] as const;
+
+export type DirectorLockScope = typeof DIRECTOR_LOCK_SCOPES[number];
+
+export interface DirectorSessionState {
+  runMode: DirectorRunMode;
+  isBackgroundRunning: boolean;
+  lockedScopes: DirectorLockScope[];
+  phase:
+    | "candidate_selection"
+    | "story_macro"
+    | "character_setup"
+    | "volume_strategy"
+    | "structured_outline"
+    | "front10_ready";
+  reviewScope?: DirectorLockScope | null;
+}
+
 export interface BookSpec {
   storyInput: string;
   positioning: string;
@@ -62,6 +145,7 @@ export interface BookSpec {
 export interface DirectorCandidate {
   id: string;
   workingTitle: string;
+  titleOptions?: TitleFactorySuggestion[];
   logline: string;
   positioning: string;
   sellingPoint: string;
@@ -90,11 +174,55 @@ export interface DirectorLLMOptions {
   provider?: LLMProvider;
   model?: string;
   temperature?: number;
+  runMode?: DirectorRunMode;
+}
+
+export interface DirectorTakeoverStageReadiness {
+  phase: DirectorTakeoverStartPhase;
+  label: string;
+  description: string;
+  available: boolean;
+  recommended: boolean;
+  reason: string;
+}
+
+export interface DirectorTakeoverReadinessResponse {
+  novelId: string;
+  novelTitle: string;
+  hasActiveTask: boolean;
+  activeTaskId?: string | null;
+  snapshot: {
+    hasStoryMacroPlan: boolean;
+    hasBookContract: boolean;
+    characterCount: number;
+    chapterCount: number;
+    volumeCount: number;
+    firstVolumeChapterCount: number;
+  };
+  stages: DirectorTakeoverStageReadiness[];
+}
+
+export interface DirectorTakeoverRequest extends DirectorLLMOptions {
+  novelId: string;
+  startPhase: DirectorTakeoverStartPhase;
+}
+
+export interface DirectorTakeoverResponse {
+  novelId: string;
+  workflowTaskId: string;
+  startPhase: DirectorTakeoverStartPhase;
+  directorSession: DirectorSessionState;
+  resumeTarget?: NovelWorkflowResumeTarget | null;
 }
 
 export interface DirectorProjectContextInput {
   title?: string;
   description?: string;
+  targetAudience?: string;
+  bookSellingPoint?: string;
+  competingFeel?: string;
+  first30ChapterPromise?: string;
+  commercialTags?: string[];
   genreId?: string;
   worldId?: string;
   writingMode?: "original" | "continuation";
@@ -118,6 +246,7 @@ export interface DirectorProjectContextInput {
 
 export interface DirectorCandidatesRequest extends DirectorProjectContextInput, DirectorLLMOptions {
   idea: string;
+  workflowTaskId?: string;
 }
 
 export interface DirectorRefinementRequest extends DirectorProjectContextInput, DirectorLLMOptions {
@@ -125,6 +254,26 @@ export interface DirectorRefinementRequest extends DirectorProjectContextInput, 
   previousBatches: DirectorCandidateBatch[];
   presets?: DirectorCorrectionPreset[];
   feedback?: string;
+  workflowTaskId?: string;
+}
+
+export interface DirectorCandidatePatchRequest extends DirectorProjectContextInput, DirectorLLMOptions {
+  idea: string;
+  previousBatches: DirectorCandidateBatch[];
+  batchId: string;
+  candidateId: string;
+  presets?: DirectorCorrectionPreset[];
+  feedback: string;
+  workflowTaskId?: string;
+}
+
+export interface DirectorCandidateTitleRefineRequest extends DirectorProjectContextInput, DirectorLLMOptions {
+  idea: string;
+  previousBatches: DirectorCandidateBatch[];
+  batchId: string;
+  candidateId: string;
+  feedback: string;
+  workflowTaskId?: string;
 }
 
 export interface DirectorConfirmRequest extends DirectorProjectContextInput, DirectorLLMOptions {
@@ -132,6 +281,7 @@ export interface DirectorConfirmRequest extends DirectorProjectContextInput, Dir
   batchId?: string;
   round?: number;
   candidate: DirectorCandidate;
+  workflowTaskId?: string;
 }
 
 export interface DirectorPlanScene {
@@ -192,7 +342,8 @@ export interface DirectorPlanDigest {
 
 export interface DirectorConfirmResponse {
   novel: Novel;
-  storyMacroPlan: StoryMacroPlan;
+  storyMacroPlan: StoryMacroPlan | null;
+  bookContract?: BookContract;
   bookSpec: BookSpec;
   batch: {
     id?: string;
@@ -200,6 +351,9 @@ export interface DirectorConfirmResponse {
   };
   createdChapterCount: number;
   createdArcCount: number;
+  workflowTaskId?: string;
+  directorSession?: DirectorSessionState;
+  resumeTarget?: NovelWorkflowResumeTarget | null;
   plans: {
     book: DirectorPlanDigest | null;
     arcs: DirectorPlanDigest[];
@@ -209,10 +363,24 @@ export interface DirectorConfirmResponse {
 
 export interface DirectorCandidatesResponse {
   batch: DirectorCandidateBatch;
+  workflowTaskId?: string;
 }
 
 export interface DirectorRefineResponse {
   batch: DirectorCandidateBatch;
+  workflowTaskId?: string;
+}
+
+export interface DirectorCandidatePatchResponse {
+  batch: DirectorCandidateBatch;
+  candidate: DirectorCandidate;
+  workflowTaskId?: string;
+}
+
+export interface DirectorCandidateTitleRefineResponse {
+  batch: DirectorCandidateBatch;
+  candidate: DirectorCandidate;
+  workflowTaskId?: string;
 }
 
 export interface DirectorConfirmApiResponse extends DirectorConfirmResponse {
@@ -222,3 +390,5 @@ export interface DirectorConfirmApiResponse extends DirectorConfirmResponse {
     chapters: DirectorPlanDigest[];
   };
 }
+
+export interface DirectorBookContractDraft extends BookContractDraft {}

@@ -39,11 +39,15 @@ import type {
 import type { BookAnalysisSectionKey } from "@ai-novel/shared/types/bookAnalysis";
 import type { LLMProvider } from "@ai-novel/shared/types/llm";
 import type { StoryWorldSliceOverrides, StoryWorldSliceView } from "@ai-novel/shared/types/storyWorldSlice";
+import type { UnifiedTaskDetail } from "@ai-novel/shared/types/task";
 import type { QuickCharacterCreatePayload } from "./characterPanel.utils";
 import type { ChapterReviewResult } from "../chapterPlanning.shared";
+import type { ChapterDetailBundleRequest } from "../chapterDetailPlanning.shared";
 import type { StructuredSyncOptions } from "../novelEdit.utils";
 import type { NovelBasicFormState } from "../novelBasicInfo.shared";
 import type { ExistingOutlineChapter } from "../volumePlan.utils";
+import type { AITakeoverAction } from "@/components/workflow/AITakeoverContainer";
+import type { ReactNode } from "react";
 
 export interface BasicTabProps {
   novelId: string;
@@ -80,6 +84,7 @@ export interface BasicTabProps {
   onRefreshWorldSlice: () => void;
   onSaveWorldSliceOverrides: (patch: StoryWorldSliceOverrides) => void;
   isSaving: boolean;
+  projectQuickStart?: ReactNode;
 }
 
 export interface StoryMacroTabProps {
@@ -195,7 +200,7 @@ export interface StructuredTabViewProps extends Omit<
   ) => void;
   onGenerateChapterDetailBundle: (
     volumeId: string,
-    chapterId: string,
+    request: ChapterDetailBundleRequest,
   ) => void;
   syncPreview: VolumeSyncPreview;
   syncOptions: StructuredSyncOptions;
@@ -409,6 +414,7 @@ export interface CharacterTabViewProps {
   characterForm: {
     name: string;
     role: string;
+    gender: "male" | "female" | "other" | "unknown";
     personality: string;
     background: string;
     development: string;
@@ -416,12 +422,43 @@ export interface CharacterTabViewProps {
     currentGoal: string;
   };
   onCharacterFormChange: (
-    field: "name" | "role" | "personality" | "background" | "development" | "currentState" | "currentGoal",
+    field: "name" | "role" | "gender" | "personality" | "background" | "development" | "currentState" | "currentGoal",
     value: string,
   ) => void;
   onSaveCharacter: () => void;
   isSavingCharacter: boolean;
   timelineEvents: CharacterTimeline[];
+}
+
+export interface NovelEditTakeoverState {
+  mode: "loading" | "running" | "waiting" | "failed";
+  title: string;
+  description: string;
+  progress?: number | null;
+  currentAction?: string | null;
+  checkpointLabel?: string | null;
+  taskId?: string | null;
+  overlay?: boolean;
+  overlayMessage?: string | null;
+  actions?: Array<{
+    label: string;
+    onClick: () => void;
+    variant?: "default" | "outline" | "secondary" | "destructive";
+    disabled?: boolean;
+  }>;
+}
+
+export interface NovelTaskDrawerState {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  task: UnifiedTaskDetail | null;
+  currentUiModel: {
+    provider: string;
+    model: string;
+    temperature: number;
+  };
+  actions: AITakeoverAction[];
+  onOpenFullTaskCenter: () => void;
 }
 
 export interface NovelEditViewProps {
@@ -435,4 +472,6 @@ export interface NovelEditViewProps {
   chapterTab: ChapterTabViewProps;
   pipelineTab: PipelineTabViewProps;
   characterTab: CharacterTabViewProps;
+  takeover?: NovelEditTakeoverState | null;
+  taskDrawer?: NovelTaskDrawerState | null;
 }

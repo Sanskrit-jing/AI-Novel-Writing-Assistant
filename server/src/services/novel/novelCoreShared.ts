@@ -97,6 +97,7 @@ export interface ChapterInput {
 export interface CharacterInput {
   name: string;
   role: string;
+  gender?: "male" | "female" | "other" | "unknown";
   castRole?: string;
   storyFunction?: string;
   relationToProtagonist?: string;
@@ -218,6 +219,21 @@ export const DEFAULT_ESTIMATED_CHAPTER_COUNT = 80;
 export function normalizeNovelOutput<T extends {
   continuationBookAnalysisSections?: string | null;
   commercialTagsJson?: string | null;
+  bookContract?: {
+    id: string;
+    novelId: string;
+    readingPromise: string;
+    protagonistFantasy: string;
+    coreSellingPoint: string;
+    chapter3Payoff: string;
+    chapter10Payoff: string;
+    chapter30Payoff: string;
+    escalationLadder: string;
+    relationshipMainline: string;
+    absoluteRedLinesJson: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+  } | null;
   primaryStoryMode?: {
     id: string;
     name: string;
@@ -253,6 +269,35 @@ export function normalizeNovelOutput<T extends {
     ...rest,
     continuationBookAnalysisSections: parseContinuationBookAnalysisSections(continuationBookAnalysisSections),
     commercialTags: parseCommercialTagsJson(commercialTagsJson),
+    ...(rest.bookContract !== undefined
+      ? {
+        bookContract: rest.bookContract
+          ? (() => {
+            const {
+              absoluteRedLinesJson,
+              createdAt,
+              updatedAt,
+              ...bookContractRest
+            } = rest.bookContract;
+            return {
+              ...bookContractRest,
+              absoluteRedLines: (() => {
+              try {
+                const parsed = JSON.parse(absoluteRedLinesJson) as unknown;
+                return Array.isArray(parsed)
+                  ? parsed.filter((item): item is string => typeof item === "string")
+                  : [];
+              } catch {
+                return [];
+              }
+              })(),
+              createdAt: new Date(createdAt).toISOString(),
+              updatedAt: new Date(updatedAt).toISOString(),
+            };
+          })()
+          : null,
+      }
+      : {}),
     ...(rest.primaryStoryMode !== undefined
       ? {
           primaryStoryMode: rest.primaryStoryMode ? normalizeStoryModeOutput(rest.primaryStoryMode) : null,

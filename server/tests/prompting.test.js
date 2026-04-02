@@ -49,7 +49,7 @@ const {
 } = require("../dist/prompting/prompts/bookAnalysis/bookAnalysis.prompts.js");
 const {
   sanitizeWriterContextBlocks,
-} = require("../dist/services/novel/runtime/chapterLayeredContext.js");
+} = require("../dist/prompting/prompts/novel/chapterLayeredContext.js");
 const {
   directorPlanBlueprintSchema,
 } = require("../dist/services/novel/director/novelDirectorSchemas.js");
@@ -62,7 +62,13 @@ test("prompt registry exposes versioned planning assets", () => {
     "agent.runtime.setup_ideation@v1",
     "planner.chapter.plan@v1",
     "novel.director.candidates@v1",
+    "novel.director.candidate_patch@v1",
     "novel.director.blueprint@v1",
+    "novel.character.castOptions@v2",
+    "novel.character.castOptions.repair@v1",
+    "novel.character.castOptions.zhNormalize@v1",
+    "novel.character.supplemental@v1",
+    "novel.character.supplemental.zhNormalize@v1",
     "novel.story_macro.decomposition@v1",
     "title.generation@v1",
     "audit.chapter.full@v1",
@@ -82,7 +88,7 @@ test("prompt registry exposes versioned planning assets", () => {
     "style.profile.extract@v1",
     "style.recommendation@v1",
     "novel.review.chapter@v1",
-    "novel.chapter.writer@v1",
+    "novel.chapter.writer@v2",
     "world.draft.generate@v1",
     "world.draft.refine@v1",
     "world.draft.refine_alternatives@v1",
@@ -108,9 +114,53 @@ test("prompt registry exposes versioned planning assets", () => {
   assert.equal(chapterAsset.taskType, "planner");
 });
 
+test("character cast prompt hardens real-name constraints and required gender output", () => {
+  const asset = getRegisteredPromptAsset("novel.character.castOptions", "v2");
+  assert.ok(asset);
+
+  const messages = asset.render({
+    optionCount: 3,
+  }, {
+    blocks: [
+      createContextBlock({
+        id: "idea",
+        group: "idea_seed",
+        priority: 100,
+        required: true,
+        content: "打工人刘雪婷穿越到秦朝成为太监，最后发现自己竟然就是赵高。",
+      }),
+      createContextBlock({
+        id: "anchor",
+        group: "protagonist_anchor",
+        priority: 99,
+        required: true,
+        content: "主角当前身份：秦朝内廷太监。隐藏身份：赵高。",
+      }),
+      createContextBlock({
+        id: "policy",
+        group: "output_policy",
+        priority: 100,
+        required: true,
+        content: "name 不能写成功能位，每个角色都必须输出 gender。",
+      }),
+    ],
+    selectedBlockIds: ["idea", "anchor", "policy"],
+    droppedBlockIds: [],
+    summarizedBlockIds: [],
+    estimatedInputTokens: 0,
+  });
+
+  assert.equal(messages.length, 2);
+  assert.match(String(messages[0].content), /绝对禁止把功能词写进 name/);
+  assert.match(String(messages[0].content), /每个角色都必须输出 gender/);
+  assert.match(String(messages[0].content), /历史、穿越、宫廷、官场/);
+  assert.match(String(messages[1].content), /storyFunction 负责写功能，name 不能写成功能位/);
+});
+
 test("novel main-chain prompt assets declare explicit non-zero context budgets", () => {
   const expectedBudgets = new Map([
     ["novel.director.candidates@v1", NOVEL_PROMPT_BUDGETS.directorCandidates],
+    ["novel.director.candidate_patch@v1", NOVEL_PROMPT_BUDGETS.directorCandidatePatch],
     ["novel.director.blueprint@v1", NOVEL_PROMPT_BUDGETS.directorBlueprint],
     ["novel.story_macro.decomposition@v1", NOVEL_PROMPT_BUDGETS.storyMacroDecomposition],
     ["novel.story_macro.field_regeneration@v1", NOVEL_PROMPT_BUDGETS.storyMacroFieldRegeneration],
@@ -118,12 +168,12 @@ test("novel main-chain prompt assets declare explicit non-zero context budgets",
     ["novel.volume.strategy.critique@v1", NOVEL_PROMPT_BUDGETS.volumeStrategyCritique],
     ["novel.volume.skeleton@v2", NOVEL_PROMPT_BUDGETS.volumeSkeleton],
     ["novel.volume.beat_sheet@v1", NOVEL_PROMPT_BUDGETS.volumeBeatSheet],
-    ["novel.volume.chapter_list@v2", NOVEL_PROMPT_BUDGETS.volumeChapterList],
+    ["novel.volume.chapter_list@v4", NOVEL_PROMPT_BUDGETS.volumeChapterList],
     ["novel.volume.chapter_purpose@v1", NOVEL_PROMPT_BUDGETS.volumeChapterDetail],
     ["novel.volume.chapter_boundary@v1", NOVEL_PROMPT_BUDGETS.volumeChapterDetail],
     ["novel.volume.chapter_task_sheet@v1", NOVEL_PROMPT_BUDGETS.volumeChapterDetail],
     ["novel.volume.rebalance.adjacent@v1", NOVEL_PROMPT_BUDGETS.volumeRebalance],
-    ["novel.chapter.writer@v1", NOVEL_PROMPT_BUDGETS.chapterWriter],
+    ["novel.chapter.writer@v2", NOVEL_PROMPT_BUDGETS.chapterWriter],
     ["novel.review.chapter@v1", NOVEL_PROMPT_BUDGETS.chapterReview],
     ["novel.review.repair@v1", NOVEL_PROMPT_BUDGETS.chapterRepair],
     ["audit.chapter.full@v1", NOVEL_PROMPT_BUDGETS.chapterReview],
@@ -163,6 +213,49 @@ test("writer guard strips forbidden context groups before prompt execution", () 
 
   assert.deepEqual(sanitized.allowedBlocks.map((block) => block.id), ["chapter_mission"]);
   assert.deepEqual(sanitized.removedBlockIds, ["full-outline", "anti-copy"]);
+});
+
+test("chapter writer prompt carries explicit target length and continuation instructions", () => {
+  const asset = getRegisteredPromptAsset("novel.chapter.writer", "v2");
+  assert.ok(asset);
+
+  const draftMessages = asset.render({
+    novelTitle: "霜轨档案",
+    chapterOrder: 4,
+    chapterTitle: "旧街反压",
+    mode: "draft",
+    targetWordCount: 3000,
+    minWordCount: 2550,
+    maxWordCount: 3450,
+  }, {
+    blocks: [],
+    selectedBlockIds: [],
+    droppedBlockIds: [],
+    summarizedBlockIds: [],
+    estimatedInputTokens: 0,
+  });
+  assert.match(String(draftMessages[0].content), /本章目标长度：约 3000 字/);
+  assert.match(String(draftMessages[0].content), /2550-3450/);
+
+  const continueMessages = asset.render({
+    novelTitle: "霜轨档案",
+    chapterOrder: 4,
+    chapterTitle: "旧街反压",
+    mode: "continue",
+    targetWordCount: 3000,
+    minWordCount: 2550,
+    maxWordCount: 3450,
+    missingWordGap: 900,
+  }, {
+    blocks: [],
+    selectedBlockIds: [],
+    droppedBlockIds: [],
+    summarizedBlockIds: [],
+    estimatedInputTokens: 0,
+  });
+  assert.match(String(continueMessages[0].content), /不得重写章节开头/);
+  assert.match(String(continueMessages[0].content), /至少缺少约 900 字/);
+  assert.match(String(continueMessages[1].content), /任务模式：补写当前章节/);
 });
 
 test("director blueprint schema accepts chapter shells without scenes", () => {

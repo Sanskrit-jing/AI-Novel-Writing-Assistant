@@ -1,4 +1,8 @@
-import type { DirectorCandidate, DirectorCandidateBatch, DirectorProjectContextInput } from "@ai-novel/shared/types/novelDirector";
+import type {
+  DirectorCandidate,
+  DirectorCandidateBatch,
+  DirectorProjectContextInput,
+} from "@ai-novel/shared/types/novelDirector";
 import type { StoryMacroPlan } from "@ai-novel/shared/types/storyMacro";
 import { createContextBlock } from "../../core/contextBudget";
 import type { PromptContextBlock } from "../../core/promptTypes";
@@ -28,6 +32,13 @@ export function formatProjectContext(input: DirectorProjectContextInput): string
   const lines = [
     input.title?.trim() ? `current title: ${input.title.trim()}` : "",
     input.description?.trim() ? `current description: ${input.description.trim()}` : "",
+    input.targetAudience?.trim() ? `target audience: ${input.targetAudience.trim()}` : "",
+    input.bookSellingPoint?.trim() ? `book selling point: ${input.bookSellingPoint.trim()}` : "",
+    input.competingFeel?.trim() ? `competing feel: ${input.competingFeel.trim()}` : "",
+    input.first30ChapterPromise?.trim() ? `first 30 chapter promise: ${input.first30ChapterPromise.trim()}` : "",
+    input.commercialTags && input.commercialTags.length > 0
+      ? `commercial tags: ${input.commercialTags.join(", ")}`
+      : "",
     input.genreId?.trim() ? `genre id: ${input.genreId.trim()}` : "",
     input.worldId?.trim() ? `world id: ${input.worldId.trim()}` : "",
     input.writingMode ? `writing mode: ${input.writingMode}` : "",
@@ -168,6 +179,47 @@ export function buildDirectorBlueprintContextBlocks(input: {
       content: `Story macro summary:\n${formatStoryMacroSummary(input.storyMacroPlan)}`,
     }),
   ];
+}
+
+export function buildDirectorBookContractContextBlocks(input: {
+  idea: string;
+  context: DirectorProjectContextInput;
+  candidate: DirectorCandidate;
+  storyMacroPlan: StoryMacroPlan | null | undefined;
+  targetChapterCount: number;
+}): PromptContextBlock[] {
+  return [
+    createContextBlock({
+      id: "book_direction",
+      group: "book_contract",
+      priority: 100,
+      required: true,
+      content: [
+        "Director book direction:",
+        formatCandidateDigest(input.candidate),
+        `target chapters: ${input.targetChapterCount}`,
+      ].join("\n"),
+    }),
+    createContextBlock({
+      id: "idea_seed",
+      group: "idea_seed",
+      priority: 96,
+      required: true,
+      content: `Idea seed:\n${compactText(input.idea)}`,
+    }),
+    createContextBlock({
+      id: "project_context",
+      group: "project_context",
+      priority: 88,
+      content: `Project context:\n${formatProjectContext(input.context) || "none"}`,
+    }),
+    createContextBlock({
+      id: "macro_constraints",
+      group: "macro_constraints",
+      priority: 92,
+      content: `Story macro summary:\n${formatStoryMacroSummary(input.storyMacroPlan)}`,
+    }),
+  ].filter((block) => block.content.trim().length > 0);
 }
 
 export function buildStoryMacroDecompositionContextBlocks(input: {
