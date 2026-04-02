@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Maximize2 } from "lucide-react";
 import MarkdownViewer from "./MarkdownViewer";
+import FullscreenEditor from "./FullscreenEditor";
 
 interface StreamOutputProps {
   isStreaming: boolean;
   content: string;
   onAbort?: () => void;
+  onChange?: (value: string) => void;
   title?: string;
   emptyText?: string;
 }
 
-export default function StreamOutput({ isStreaming, content, onAbort, title = "AI 输出", emptyText = "等待流式输出..." }: StreamOutputProps) {
+export default function StreamOutput({ isStreaming, content, onAbort, onChange, title = "AI 输出", emptyText = "等待流式输出..." }: StreamOutputProps) {
   const wordCount = content.trim().length;
 
   return (
@@ -28,6 +31,23 @@ export default function StreamOutput({ isStreaming, content, onAbort, title = "A
           ) : (
             <span className="text-xs text-muted-foreground">字数：{wordCount}</span>
           )}
+          {onChange && (
+            <FullscreenEditor
+              value={content}
+              onChange={onChange}
+              title={`${title} - 编辑`}
+              placeholder={emptyText}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                title="全查看和编辑"
+              >
+                <Maximize2 className="h-3 w-3" />
+              </Button>
+            </FullscreenEditor>
+          )}
           {isStreaming && onAbort ? (
             <Button size="sm" variant="secondary" onClick={onAbort}>
               停止生成
@@ -36,7 +56,9 @@ export default function StreamOutput({ isStreaming, content, onAbort, title = "A
         </div>
       </div>
 
-      <MarkdownViewer content={content || emptyText} />
+      <div className="max-h-[200px] overflow-y-auto">
+        <MarkdownViewer content={content || emptyText} />
+      </div>
     </motion.div>
   );
 }

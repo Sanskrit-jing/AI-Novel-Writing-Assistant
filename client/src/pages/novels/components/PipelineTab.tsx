@@ -33,10 +33,12 @@ interface PipelineTabProps {
   onAbortBible: () => void;
   isBibleStreaming: boolean;
   bibleStreamContent: string;
+  onBibleStreamContentChange?: (content: string) => void;
   onGenerateBeats: () => void;
   onAbortBeats: () => void;
   isBeatsStreaming: boolean;
   beatsStreamContent: string;
+  onBeatsStreamContentChange?: (content: string) => void;
   onRunPipeline: (patch?: Partial<PipelineTabProps["pipelineForm"]>) => void;
   isRunningPipeline: boolean;
   pipelineMessage: string;
@@ -57,6 +59,7 @@ interface PipelineTabProps {
   repairBeforeContent: string;
   repairAfterContent: string;
   repairStreamContent: string;
+  onRepairStreamContentChange?: (content: string) => void;
   isRepairStreaming: boolean;
   onAbortRepair: () => void;
   qualitySummary?: QualityScore;
@@ -105,10 +108,12 @@ export default function PipelineTab(props: PipelineTabProps) {
     onAbortBible,
     isBibleStreaming,
     bibleStreamContent,
+    onBibleStreamContentChange,
     onGenerateBeats,
     onAbortBeats,
     isBeatsStreaming,
     beatsStreamContent,
+    onBeatsStreamContentChange,
     onRunPipeline,
     isRunningPipeline,
     pipelineMessage,
@@ -126,6 +131,7 @@ export default function PipelineTab(props: PipelineTabProps) {
     repairBeforeContent,
     repairAfterContent,
     repairStreamContent,
+    onRepairStreamContentChange,
     isRepairStreaming,
     onAbortRepair,
     qualitySummary,
@@ -369,8 +375,8 @@ export default function PipelineTab(props: PipelineTabProps) {
               )}
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <StreamOutput content={bibleStreamContent} isStreaming={isBibleStreaming} onAbort={onAbortBible} />
-              <StreamOutput content={beatsStreamContent} isStreaming={isBeatsStreaming} onAbort={onAbortBeats} />
+              <StreamOutput content={bibleStreamContent} isStreaming={isBibleStreaming} onAbort={onAbortBible} onChange={onBibleStreamContentChange} />
+              <StreamOutput content={beatsStreamContent} isStreaming={isBeatsStreaming} onAbort={onAbortBeats} onChange={onBeatsStreamContentChange} />
             </div>
           </CardContent>
         </Card>
@@ -407,7 +413,7 @@ export default function PipelineTab(props: PipelineTabProps) {
                 </div>
               </div>
             ) : null}
-            <StreamOutput content={repairStreamContent} isStreaming={isRepairStreaming} onAbort={onAbortRepair} />
+            <StreamOutput content={repairStreamContent} isStreaming={isRepairStreaming} onAbort={onAbortRepair} onChange={onRepairStreamContentChange} />
             {(repairBeforeContent || repairAfterContent) ? (
               <div className="grid gap-3 md:grid-cols-2">
                 <pre className="max-h-[220px] overflow-auto whitespace-pre-wrap rounded-md border bg-muted/30 p-2 text-xs">{repairBeforeContent || "暂无"}</pre>
