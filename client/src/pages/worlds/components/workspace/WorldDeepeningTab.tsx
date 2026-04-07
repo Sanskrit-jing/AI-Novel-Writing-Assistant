@@ -27,11 +27,11 @@ export default function WorldDeepeningTab(props: WorldDeepeningTabProps) {
   } = props;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>问答深化</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 overflow-y-auto space-y-3">
         <Button onClick={onGenerate} disabled={generatePending}>
           {generatePending ? "生成中..." : "生成深化问题"}
         </Button>

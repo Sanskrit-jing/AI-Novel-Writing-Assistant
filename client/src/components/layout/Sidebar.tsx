@@ -143,7 +143,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "border-r bg-muted/20 p-3 transition-[width] duration-200",
+        "border-r bg-gradient-to-b from-slate-100 to-slate-200 p-3 transition-[width] duration-200 shadow-[inset_-4px_0_8px_rgba(0,0,0,0.05)]",
         collapsed ? "w-[72px]" : "w-64",
       )}
     >
@@ -181,32 +181,25 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   {({ isActive }) => (
                     <div
                       className={cn(
-                        "relative flex items-center rounded-md text-sm transition-colors",
-                        collapsed ? "justify-center px-2 py-2.5" : "py-2 pl-4 pr-2",
+                        "relative flex items-center rounded-lg text-sm transition-all",
+                        collapsed ? "justify-center px-2 py-2.5" : "py-2.5 pl-4 pr-3",
                         isActive
-                          ? "bg-accent/90 font-semibold text-accent-foreground"
-                          : "text-foreground hover:bg-accent hover:text-accent-foreground",
-                        isNovelEntry && !collapsed && (isActive ? "ring-1 ring-primary/20" : "bg-primary/5 hover:bg-primary/10"),
+                          ? "bg-gradient-to-b from-gray-100 to-gray-200 font-semibold text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.8)]"
+                          : "bg-gradient-to-b from-gray-50 to-gray-100 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.8)] hover:from-gray-100 hover:to-gray-200",
+                        "border border-gray-200/60",
+                        "mb-1.5",
                       )}
                     >
-                      <span
-                        className={cn(
-                          "absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-transparent",
-                          isActive && "bg-primary",
-                          collapsed && "left-0.5 h-6",
-                        )}
-                      />
-
                       <Icon
                         className={cn(
                           "h-[18px] w-[18px] shrink-0",
                           collapsed ? "mx-auto" : "mr-3",
-                          isNovelEntry && "text-primary",
+                          isActive ? "text-primary" : "text-muted-foreground",
                         )}
                       />
 
                       {!collapsed ? (
-                        <span className={cn("truncate", isNovelEntry && "font-semibold")}>
+                        <span className="truncate">
                           {item.label}
                         </span>
                       ) : null}

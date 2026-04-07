@@ -88,11 +88,11 @@ export default function WorldStructureTab(props: {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>结构化设定</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-y-auto space-y-4">
         <div className="rounded-md border p-3 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             {SECTION_OPTIONS.map((option) => (

@@ -76,11 +76,11 @@ export default function WorldLayersTab(props: WorldLayersTabProps) {
   } = props;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>分层构建</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-y-auto space-y-4">
         <div className="flex flex-wrap items-center gap-2 rounded-md border p-3">
           <Button onClick={onGenerateAll} disabled={generateAllPending || !world}>
             {generateAllPending ? "六层生成中..." : isInitialLayerGeneration ? "首次 AI 生成六层" : "一键重建六层"}

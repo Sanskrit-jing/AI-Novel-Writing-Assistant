@@ -96,11 +96,11 @@ export default function WorldAssetsTab(props: WorldAssetsTabProps) {
   } = props;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>素材库 + 快照版本 + 导入导出</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-y-auto space-y-4">
         <div className="rounded-md border p-3 space-y-2">
           <div className="font-medium">素材库</div>
           <div className="grid gap-2 md:grid-cols-3">

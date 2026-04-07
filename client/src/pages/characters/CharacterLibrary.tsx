@@ -164,11 +164,11 @@ export default function CharacterLibrary() {
         }}
       />
 
-      <Card>
-        <CardHeader>
+      <Card className="h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="shrink-0">
           <CardTitle>角色列表</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="flex-1 overflow-y-auto space-y-3">
           {characters.map((character, index) => (
             <CharacterCard
               key={character.id}

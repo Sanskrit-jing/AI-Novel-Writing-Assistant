@@ -23,11 +23,11 @@ export default function WorldConsistencyTab(props: WorldConsistencyTabProps) {
   const { report, issues, checkPending, onCheck, onPatchIssue } = props;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[calc(100vh-8rem)] flex flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>一致性检查</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 overflow-y-auto space-y-3">
         <Button onClick={onCheck} disabled={checkPending}>
           {checkPending ? "检查中..." : "运行一致性检查"}
         </Button>

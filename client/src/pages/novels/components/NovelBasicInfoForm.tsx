@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import type { BookAnalysisSectionKey } from "@ai-novel/shared/types/bookAnalysis";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import FullscreenEditor from "@/components/common/FullscreenEditor";
+import { Maximize2 } from "lucide-react";
 import {
   AI_FREEDOM_OPTIONS,
   BASIC_INFO_FIELD_HINTS,
@@ -70,7 +72,6 @@ interface NovelBasicInfoFormProps {
   titleQuickFill?: ReactNode;
   framingQuickFill?: ReactNode;
   projectQuickStart?: ReactNode;
-  resourceRecommendation?: ReactNode;
 }
 
 export default function NovelBasicInfoForm(props: NovelBasicInfoFormProps) {
@@ -92,7 +93,6 @@ export default function NovelBasicInfoForm(props: NovelBasicInfoFormProps) {
     titleQuickFill,
     framingQuickFill,
     projectQuickStart,
-    resourceRecommendation,
   } = props;
 
   const continuationSourceMissing = basicForm.writingMode === "continuation"
@@ -126,7 +126,24 @@ export default function NovelBasicInfoForm(props: NovelBasicInfoFormProps) {
         description="先定义这是什么作品，以及它是从零开始还是基于既有内容继续创作。"
       >
         <div className="space-y-2">
-          <FieldLabel htmlFor="basic-title">小说标题</FieldLabel>
+          <div className="flex items-center justify-between">
+            <FieldLabel htmlFor="basic-title">小说标题</FieldLabel>
+            <FullscreenEditor
+              value={basicForm.title}
+              onChange={(value) => onFormChange({ title: value })}
+              title="全屏编辑 - 小说标题"
+              placeholder="例如：雾港审判局"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                title="全屏编辑"
+              >
+                <Maximize2 className="h-3 w-3" />
+              </Button>
+            </FullscreenEditor>
+          </div>
           <Input
             id="basic-title"
             value={basicForm.title}
@@ -137,7 +154,24 @@ export default function NovelBasicInfoForm(props: NovelBasicInfoFormProps) {
         </div>
 
         <div className="space-y-2">
-          <FieldLabel htmlFor="basic-description">一句话概述</FieldLabel>
+          <div className="flex items-center justify-between">
+            <FieldLabel htmlFor="basic-description">一句话概述</FieldLabel>
+            <FullscreenEditor
+              value={basicForm.description}
+              onChange={(value) => onFormChange({ description: value })}
+              title="全屏编辑 - 一句话概述"
+              placeholder="用 2-4 句话说明主角、核心冲突和故事看点。"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                title="全屏编辑"
+              >
+                <Maximize2 className="h-3 w-3" />
+              </Button>
+            </FullscreenEditor>
+          </div>
           <textarea
             id="basic-description"
             rows={4}
@@ -174,8 +208,6 @@ export default function NovelBasicInfoForm(props: NovelBasicInfoFormProps) {
             题材基底回答“这是什么书”，例如修仙、都市、历史架空；推进模式回答“这本书靠什么持续推进和兑现”，例如系统流、无敌流、种田流。
           </div>
         </div>
-
-        {resourceRecommendation}
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-2">
@@ -235,12 +267,12 @@ export default function NovelBasicInfoForm(props: NovelBasicInfoFormProps) {
               id="basic-estimated-chapters"
               type="number"
               min={1}
-              max={2000}
+              max={500}
               value={basicForm.estimatedChapterCount}
               onChange={(event) => onFormChange({
                 estimatedChapterCount: Math.max(
                   1,
-                  Math.min(2000, Number(event.target.value || 0) || DEFAULT_ESTIMATED_CHAPTER_COUNT),
+                  Math.min(500, Number(event.target.value || 0) || DEFAULT_ESTIMATED_CHAPTER_COUNT),
                 ),
               })}
             />

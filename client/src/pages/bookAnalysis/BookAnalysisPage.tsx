@@ -41,7 +41,7 @@ export default function BookAnalysisPage() {
           onOpenAnalysis={workspace.openAnalysis}
         />
 
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 h-[calc(100vh-8rem)] overflow-y-auto">
           <BookAnalysisDetailPanel
             selectedAnalysis={workspace.selectedAnalysis}
             novelOptions={workspace.novelOptions}

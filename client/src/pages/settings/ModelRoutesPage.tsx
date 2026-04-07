@@ -260,11 +260,6 @@ export default function ModelRoutesPage() {
                     searchPlaceholder="搜索模型"
                     emptyText="当前服务商暂无可选模型"
                   />
-                  <Input
-                    value={draft.model}
-                    placeholder="也可以直接手动输入模型名"
-                    onChange={(event) => patchDraft(taskType, { model: event.target.value })}
-                  />
                 </div>
 
                 <div className="space-y-1">
@@ -299,13 +294,17 @@ export default function ModelRoutesPage() {
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => saveModelRouteMutation.mutate({
-                    taskType,
-                    provider: draft.provider,
-                    model: draft.model,
-                    temperature: Number(draft.temperature || 0.7),
-                    maxTokens: draft.maxTokens.trim() ? Number(draft.maxTokens) : null,
-                  })}
+                  onClick={() => {
+                    const temperature = parseFloat(draft.temperature || "0.7");
+                    const maxTokens = draft.maxTokens.trim() ? parseInt(draft.maxTokens, 10) : null;
+                    saveModelRouteMutation.mutate({
+                      taskType,
+                      provider: draft.provider,
+                      model: draft.model,
+                      temperature: isNaN(temperature) ? 0.7 : temperature,
+                      maxTokens: maxTokens === null || isNaN(maxTokens) ? null : maxTokens,
+                    });
+                  }}
                   disabled={saveModelRouteMutation.isPending || !draft.provider.trim() || !draft.model.trim()}
                 >
                   保存路由
